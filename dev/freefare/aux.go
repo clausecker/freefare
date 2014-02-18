@@ -8,7 +8,7 @@ package freefare
 
 // #include <freefare.h>
 import "C"
-import "github.com/fuzxxl/nfc/0.1/nfc"
+import "github.com/fuzxxl/nfc/dev/nfc"
 import "unsafe"
 
 // This wraps nfc.(*Device).Pointer() to return a correctly typed pointer.
