@@ -1,0 +1,17 @@
+mifare_ultralight.c
+
+ * function mifare_ultralightc_authenticate does not set errno on encryption
+   failure. This could make finding what kind of error happened a little bit
+   more difficult. Anyway, cgo clears errno before any C call so this should not
+   affect us in most circumstances.
+
+mifare_desfire_key.c
+
+* Objects of type MifareDESFireKey are opaque and allocated by the libfreefare.
+  This makes it more difficult than it could be to wrap the library. These
+  objects are not tied to any ressources and should therefore be treatable like
+  any other "disposable" object. But because Go cannot track their allocation,
+  the user of the Go wrapper has to manually keep track of MifareDESFireKeys.
+  This is a huge inconvenience which could be entirely avoided by adding a
+  callback to the libfreefare that allows a user to provide its own allocation
+  function.
