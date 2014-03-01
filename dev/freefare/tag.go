@@ -6,7 +6,6 @@ package freefare
 import "C"
 import "errors"
 import "github.com/fuzxxl/nfc/dev/nfc"
-import "runtime"
 import "unsafe"
 
 // This struct represents a Mifare tag of arbitrary type. You can figure out its
@@ -16,25 +15,13 @@ type Tag struct {
 	tag  C.MifareTag
 	dev  *nfc.Device
 	info *C.nfc_iso14443a_info // may be nil
-
-	// The singleton pointer makes sure that the instance of a Tag that
-	// carries the finalizer is referenced as long as there is any copy of
-	// it is around. This makes sure that the finalizer is not run to early.
-	singleton *Tag
+	*finalizee
 }
 
 // Wrap a C.MifareTag and set a finalizer to automatically free the tag once it
 // becomes unreachable.
 func wrapTag(t C.MifareTag, d *nfc.Device, i *C.nfc_iso14443a_info) *Tag {
-	tag := &Tag{t, d, i, nil}
-	runtime.SetFinalizer(
-		tag, func(t Tag) {
-			C.freefare_free_tag(t.tag)
-			C.free(unsafe.Pointer(t.info))
-		})
-
-	tag.singleton = tag
-
+	tag := &Tag{t, d, i, newFinalizee(unsafe.Pointer(t))}
 	return tag
 }
 
