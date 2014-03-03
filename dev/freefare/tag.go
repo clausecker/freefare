@@ -5,7 +5,7 @@ package freefare
 // #include <stdlib.h>
 import "C"
 import "errors"
-import "github.com/fuzxxl/nfc/dev/nfc"
+import "github.com/fuzxxl/nfc/0.2/nfc"
 import "unsafe"
 
 // This struct represents a Mifare tag of arbitrary type. You can figure out its
