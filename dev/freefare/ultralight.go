@@ -11,7 +11,7 @@ type UltralightTag struct {
 	*Tag
 }
 
-// Connect to a Mifare Ultralight Tag. This causes the tag to be active.
+// Connect to a Mifare Ultralight tag. This causes the tag to be active.
 func (t UltralightTag) Connect() error {
 	r, err := C.mifare_ultralight_connect(t.tag)
 	if r == 0 {
@@ -42,7 +42,7 @@ func (t UltralightTag) Connect() error {
 	}
 }
 
-// Disconnect from a Mifare Ultralight Tag. This causes the tag to be inactive.
+// Disconnect from a Mifare Ultralight tag. This causes the tag to be inactive.
 func (t UltralightTag) Disconnect() error {
 	r, err := C.mifare_ultralight_disconnect(t.tag)
 	if r == 0 {
@@ -165,11 +165,9 @@ func (t UltralightTag) Authenticate(key DESFireKey) error {
 
 	// error handling as above.
 	if err == nil {
-
-		// error handling is inconsistentent here: the libfreefare does
-		// not set errno (!) when the authentication failes, even though
-		// there are several perfectly valid errnos to use for this
-		// case, such as EACCES (best choice), ECONNREFUSED, or EPROTO.
+		// libfreefare <= 0.4.0 does not set errno on authentication
+		// failure, so assume that authentication failed when errno is
+		// not set.
 		return errors.New("authentication failed")
 	}
 
@@ -181,6 +179,8 @@ func (t UltralightTag) Authenticate(key DESFireKey) error {
 		return errors.New("tag not active")
 	case syscall.ENODEV:
 		return errors.New("tag is not a Mifare UltralightC tag")
+	case syscall.EACCES:
+		return errors.New("authentication failed")
 	default:
 		return err
 	}
