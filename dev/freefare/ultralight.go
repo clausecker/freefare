@@ -120,15 +120,10 @@ func (t UltralightTag) ReadPage(page byte) ([4]byte, error) {
 // Please notice that this function has been renamed to avoid confusion with the
 // Write() function from io.Writer.
 func (t UltralightTag) WritePage(page byte, data [4]byte) error {
-	var cdata C.MifareUltralightPage
-	for i, d := range data {
-		cdata[i] = C.uchar(d)
-	}
-
 	r, err := C.mifare_ultralight_write(
 		t.tag,
 		C.MifareUltralightPageNumber(page),
-		&cdata[0],
+		(*C.uchar)(&data[0]),
 	)
 
 	if r == 0 {
