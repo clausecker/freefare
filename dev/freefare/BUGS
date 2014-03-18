@@ -3,7 +3,7 @@ mifare_ultralight.c
  * function mifare_ultralightc_authenticate does not set errno on encryption
    failure. This could make finding what kind of error happened a little bit
    more difficult. Anyway, cgo clears errno before any C call so this should not
-   affect us in most circumstances.
+   affect us in most circumstances. (Reported as issue #20, fixed)
 
 mifare_desfire_key.c
 
@@ -14,4 +14,10 @@ mifare_desfire_key.c
   the user of the Go wrapper has to manually keep track of MifareDESFireKeys.
   This is a huge inconvenience which could be entirely avoided by adding a
   callback to the libfreefare that allows a user to provide its own allocation
-  function.
+  function. (Reported as issue #21)
+
+mifare_classic.c
+
+* Some functions that assume a MifareTag is a Mifare Classic Tag don't check if
+  that assumption holds. The wrapper has to perform extra checks to avoid memory
+  corruption from invalid input data. (Reported as issue #23)
