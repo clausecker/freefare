@@ -314,6 +314,24 @@ func (t ClassicTag) Transfer(block byte) error {
 	}
 }
 
+// Mifare Classic access bits
+const (
+	MCAB_I = 1 << iota
+	MCAB_D
+	MCAB_W
+	MCAB_R
+)
+
+// Other Mifare Classic constants
+const (
+	MCAB_WRITE_KEYB = 1 << (2 * iota)
+	MCAB_READ_KEYB
+	MCAB_WRITE_ACCESS_BITS
+	MCAB_READ_ACCESS_BITS
+	MCAB_WRITE_KEYA
+	MCAB_READ_KEYA
+)
+
 // Get information about the trailer block. Use the provided constants for
 // keyType. This function doesn't work for block 0.
 func (t ClassicTag) TrailerBlockPermission(block byte, permission uint16, keyType int) (bool, error) {
