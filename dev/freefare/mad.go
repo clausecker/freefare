@@ -1,5 +1,7 @@
 package freefare
 
+// #include <stdlib.h>
+// #include <string.h>
 // #include <freefare.h>
 import "C"
 import "errors"
@@ -228,4 +230,148 @@ func (m *Mad) SetAid(sector byte, aid MadAid) error {
 // Tell if a certain sector has been reserved. This wraps mad_sector_reserved().
 func (m *Mad) Reserved(sector byte) bool {
 	return bool(C.mad_sector_reserved(C.MifareClassicSectorNumber(sector)))
+}
+
+// Allocate a new application into a MAD. This function returns a slice of
+// newly allocated sectors. This function returns nil if the application already
+// exists. This function wraps mifare_application_alloc().
+func (m *Mad) AllocApplication(aid MadAid, size uint) []byte {
+	r, err := C.mifare_application_alloc(m.m, aid.aid, C.size_t(size))
+	defer C.free(unsafe.Pointer(r))
+	if r != nil {
+		return C.GoBytes(unsafe.Pointer(r), C.int(C.strlen((*C.char)(unsafe.Pointer(r)))))
+	}
+
+	// no error occurred (hopefully). Let's expect the application already
+	// exists
+	if err == nil {
+		return nil
+	}
+
+	// the only error that might happen is out-of-memory.
+	panic("C.malloc() returned nil (out of memory)")
+}
+
+// Remove an application from a MAD. If the application does not exist, this
+// function is a NOP. This function wraps mifare_application_free().
+func (m *Mad) FreeApplication(aid MadAid) {
+	// mifare_application_free() does not check if the return value of
+	// mifare_application_find() is NULL and chooses to crash instead. As
+	// crashing is considered bad style in Go, we try to work around this.
+	r, err := C.mifare_application_find(m.m, aid.aid)
+	defer C.free(unsafe.Pointer(r))
+	if r == nil && err == nil {
+		return // application not found
+	}
+
+	if r == nil && err != nil {
+		// no other error can occur
+		panic("C.malloc() returned nil (out of memory)")
+	}
+
+	// let's hope it works this time.
+	_, err = C.mifare_application_free(m.m, aid.aid)
+	if err != nil {
+		panic("C.malloc() returned nil (out of memory)")
+	}
+}
+
+// Get all sector numbers of an application from the provided MAD. This function
+// returns nil if the application could not be found. This function
+// mifare_application_find().
+func (m *Mad) FindApplication(aid MadAid) []byte {
+	r, err := C.mifare_application_find(m.m, aid.aid)
+	defer C.free(unsafe.Pointer(r))
+	if r == nil && err == nil {
+		return nil // application not found
+	}
+
+	if r == nil && err != nil {
+		// no other error can occur
+		panic("C.malloc() returned nil (out of memory)")
+	}
+
+	return C.GoBytes(unsafe.Pointer(r), C.int(C.strlen((*C.char)(unsafe.Pointer(r)))))
+}
+
+// Read the provided application sectors from a Mifare Classic tag. This
+// function returns the number of sectors read or a negative number and an
+// error. This function wraps mifare_application_read().
+func (t ClassicTag) ReadApplication(m *Mad, aid MadAid, buf []byte, key [6]byte, keyType int) (int, error) {
+	r, err := C.mifare_application_read(
+		t.tag, m.m, aid.aid,
+		unsafe.Pointer(&buf[0]),
+		C.size_t(len(buf)),
+		(*C.uchar)(&key[0]),
+		C.MifareClassicKeyType(keyType),
+	)
+
+	if r >= 0 {
+		return int(r), nil
+	}
+
+	if err == nil {
+		return -1, errors.New("authentication failed")
+	}
+
+	errno := err.(syscall.Errno)
+	switch errno {
+	case syscall.EIO:
+		return -1, t.dev.LastError()
+	case syscall.EBADF:
+		// libfreefare 0.4.0 does not check if malloc failed and wrongly
+		// reports EBADF if malloc failed.
+		return -1, errors.New("application not found")
+	case syscall.ENXIO:
+		return -1, errors.New("tag not active")
+	case syscall.ENODEV:
+		return -1, errors.New("tag is not a Mifare Classic tag")
+	case syscall.EINVAL:
+		return -1, errors.New("invalid block")
+	case syscall.EACCES:
+		return -1, errors.New("authentication failed")
+	default:
+		return -1, err
+	}
+}
+
+// Write the provided application sector to a Mifare Classic tag. This function
+// returns the number of bytes written or a negative number and an error. This
+// function wraps mifare_application_write().
+func (t ClassicTag) WriteApplication(m *Mad, aid MadAid, buf []byte, key [6]byte, keyType int) (int, error) {
+	r, err := C.mifare_application_write(
+		t.tag, m.m, aid.aid,
+		unsafe.Pointer(&buf[0]),
+		C.size_t(len(buf)),
+		(*C.uchar)(&key[0]),
+		C.MifareClassicKeyType(keyType),
+	)
+
+	if r >= 0 {
+		return int(r), nil
+	}
+
+	if err == nil {
+		return -1, errors.New("authentication failed")
+	}
+
+	errno := err.(syscall.Errno)
+	switch errno {
+	case syscall.EIO:
+		return -1, t.dev.LastError()
+	case syscall.EBADF:
+		// libfreefare 0.4.0 does not check if malloc failed and wrongly
+		// reports EBADF if malloc failed.
+		return -1, errors.New("application not found")
+	case syscall.ENXIO:
+		return -1, errors.New("tag not active")
+	case syscall.ENODEV:
+		return -1, errors.New("tag is not a Mifare Classic tag")
+	case syscall.EINVAL:
+		return -1, errors.New("invalid block")
+	case syscall.EACCES:
+		return -1, errors.New("authentication failed")
+	default:
+		return -1, err
+	}
 }
