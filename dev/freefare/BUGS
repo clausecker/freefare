@@ -27,4 +27,8 @@ mifare_application.c
 * The function mifare_application_free does not check for the possibility that
   mifare_application_find returned a NULL pointer. The libfreefare crashes when
   you try to delete a nonexisting application or when malloc returned NULL in
-  mifare_application_find. (Reported as issue #24 with patch)
+  mifare_application_find (Reported as issue #24 with patch). A similar issue
+  exists with mifare_application_write. Even though the function checks the
+  return valueo of mifare_application_find, it does not check if the NULL result
+  came from malloc-failure and unconditionally returns EBADF instead of ENOMEM.
+  (Reported as additional patch to issue #23)
