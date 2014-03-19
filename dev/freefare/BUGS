@@ -21,3 +21,10 @@ mifare_classic.c
 * Some functions that assume a MifareTag is a Mifare Classic Tag don't check if
   that assumption holds. The wrapper has to perform extra checks to avoid memory
   corruption from invalid input data. (Reported as issue #23)
+
+mifare_application.c
+
+* The function mifare_application_free does not check for the possibility that
+  mifare_application_find returned a NULL pointer. The libfreefare crashes when
+  you try to delete a nonexisting application or when malloc returned NULL in
+  mifare_application_find. (Reported as issue #24 with patch)
