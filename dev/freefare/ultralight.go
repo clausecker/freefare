@@ -13,58 +13,18 @@ type UltralightTag struct {
 
 // Connect to a Mifare Ultralight tag. This causes the tag to be active.
 func (t UltralightTag) Connect() error {
-	r, err := C.mifare_ultralight_connect(t.tag)
-	if r == 0 {
-		return nil
-	}
-
-	// Now, figure out what exactly went wrong. mifare_ultralight_connect
-	// helpfully sets errno to distinct values for each kind of error that
-	// can occur.
-	if err == nil {
-		// This should actually not happen since the libfreefare
-		// explicitly sets errno everywhere.
-		return errors.New("unknown error")
-	}
-
-	errno := err.(syscall.Errno)
-	switch errno {
-	case syscall.EIO:
-		// nfc_initiator_select_passive_target failed.
-		return t.dev.LastError()
-	case syscall.ENXIO:
-		return errors.New("tag already active")
-	case syscall.ENODEV:
-		return errors.New("tag is not a Mifare Ultralight tag")
-	default:
-		// all possible errors were handled above, but anyway.
-		return err
-	}
+	return t.genericConnect(func(t C.MifareTag) (C.int, error) {
+		r, err := C.mifare_ultralight_connect(t)
+		return r, err
+	})
 }
 
 // Disconnect from a Mifare Ultralight tag. This causes the tag to be inactive.
 func (t UltralightTag) Disconnect() error {
-	r, err := C.mifare_ultralight_disconnect(t.tag)
-	if r == 0 {
-		return nil
-	}
-
-	// Error handling as above
-	if err == nil {
-		return errors.New("unknown error")
-	}
-
-	errno := err.(syscall.Errno)
-	switch errno {
-	case syscall.EIO:
-		return t.dev.LastError()
-	case syscall.ENXIO:
-		return errors.New("tag already inactive")
-	case syscall.ENODEV:
-		return errors.New("tag is not a Mifare Ultralight tag")
-	default:
-		return err
-	}
+	return t.genericDisconnect(func(t C.MifareTag) (C.int, error) {
+		r, err := C.mifare_ultralight_disconnect(t)
+		return r, err
+	})
 }
 
 // Read one page of data from a Mifare Ultralight tag. page denotes the page

@@ -19,62 +19,18 @@ const (
 
 // Connect to a Mifare Classic tag. This causes the tag to be active.
 func (t ClassicTag) Connect() error {
-	r, err := C.mifare_classic_connect(t.tag)
-	if r == 0 {
-		return nil
-	}
-
-	// Now, figure out what exactly went wrong. mifare_classic_connect
-	// helpfully sets errno to distinct values for each kind of error that
-	// can occur.
-	if err == nil {
-		// This should actually not happen since the libfreefare
-		// explicitly sets errno everywhere.
-		return errors.New("unknown error")
-	}
-
-	errno := err.(syscall.Errno)
-	switch errno {
-	case syscall.EIO:
-		// nfc_initiator_select_passive_target failed.
-		return t.dev.LastError()
-	case syscall.ENXIO:
-		return errors.New("tag already active")
-	case syscall.ENODEV:
-		return errors.New("tag is not a Mifare Classic tag")
-	case syscall.EACCES:
-		return errors.New("authentication failed")
-	default:
-		// all possible errors were handled above, but anyway.
-		return err
-	}
+	return t.genericConnect(func(t C.MifareTag) (C.int, error) {
+		r, err := C.mifare_classic_connect(t)
+		return r, err
+	})
 }
 
 // Disconnect from a Mifare Classic tag. This causes the tag to be inactive.
 func (t ClassicTag) Disconnect() error {
-	r, err := C.mifare_classic_disconnect(t.tag)
-	if r == 0 {
-		return nil
-	}
-
-	// Error handling as above
-	if err == nil {
-		return errors.New("authentication failed")
-	}
-
-	errno := err.(syscall.Errno)
-	switch errno {
-	case syscall.EIO:
-		return t.dev.LastError()
-	case syscall.ENXIO:
-		return errors.New("tag already inactive")
-	case syscall.ENODEV:
-		return errors.New("tag is not a Mifare Classic tag")
-	case syscall.EACCES:
-		return errors.New("authentication failed")
-	default:
-		return err
-	}
+	return t.genericDisconnect(func(t C.MifareTag) (C.int, error) {
+		r, err := C.mifare_classic_disconnect(t)
+		return r, err
+	})
 }
 
 // Authenticate against a Mifare Classic tag. Use the provided constants for
