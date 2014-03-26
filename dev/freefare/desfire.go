@@ -18,14 +18,26 @@ type DESFireTag struct {
 	*Tag
 }
 
-// Get last PCD error. This function wraps mifare_desfire_last_pcd_error().
-func (t DESFireTag) LastPCDError() byte {
-	return byte(C.mifare_desfire_last_pcd_error(t.tag))
+// Get last PCD error. This function wraps mifare_desfire_last_pcd_error(). If
+// no error has occured, this function returns nil.
+func (t DESFireTag) LastPCDError() error {
+	err := Error(C.mifare_desfire_last_pcd_error(t.tag))
+	if err == 0 {
+		return nil
+	} else {
+		return err
+	}
 }
 
-// Get last PICC error. This function wraps mifare_desfire_last_picc_error().
-func (t DESFireTag) LastPICCError() byte {
-	return byte(C.mifare_desfire_last_picc_error(t.tag))
+// Get last PICC error. This function wraps mifare_desfire_last_picc_error(). If
+// no error has occured, this function returns nil.
+func (t DESFireTag) LastPICCError() error {
+	err := Error(C.mifare_desfire_last_picc_error(t.tag))
+	if err == 0 {
+		return nil
+	} else {
+		return err
+	}
 }
 
 // Figure out what kind of error is hidden behind an EIO. This function largely
@@ -36,13 +48,13 @@ func (t DESFireTag) resolveEIO() error {
 		return err
 	}
 
-	enr := Error(t.LastPCDError())
-	if enr != OPERATION_OK {
+	err = Error(t.LastPCDError())
+	if err != nil {
 		return enr
 	}
 
-	enr = Error(t.LastPICCError())
-	if enr != OPERATION_OK {
+	err = Error(t.LastPICCError())
+	if err != nil {
 		return enr
 	}
 
