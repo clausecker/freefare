@@ -2,8 +2,6 @@ package freefare
 
 // #include <freefare.h>
 import "C"
-import "errors"
-import "syscall"
 
 // Wrap a Tag into an UltralightTag to access functionality available for
 // Mifare Ultralight tags.
@@ -13,18 +11,22 @@ type UltralightTag struct {
 
 // Connect to a Mifare Ultralight tag. This causes the tag to be active.
 func (t UltralightTag) Connect() error {
-	return t.genericConnect(func(t C.MifareTag) (C.int, error) {
-		r, err := C.mifare_ultralight_connect(t)
-		return r, err
-	})
+	r, err := C.mifare_ultralight_connect(t.tag)
+	if r != 0 {
+		return t.resolveError(err)
+	}
+
+	return nil
 }
 
 // Disconnect from a Mifare Ultralight tag. This causes the tag to be inactive.
 func (t UltralightTag) Disconnect() error {
-	return t.genericDisconnect(func(t C.MifareTag) (C.int, error) {
-		r, err := C.mifare_ultralight_disconnect(t)
-		return r, err
-	})
+	r, err := C.mifare_ultralight_disconnect(t.tag)
+	if r != 0 {
+		return t.resolveError(err)
+	}
+
+	return nil
 }
 
 // Read one page of data from a Mifare Ultralight tag. page denotes the page
@@ -52,24 +54,7 @@ func (t UltralightTag) ReadPage(page byte) ([4]byte, error) {
 		return [4]byte{}, nil
 	}
 
-	// Error handling as above
-	if err == nil {
-		return [4]byte{}, errors.New("unknown error")
-	}
-
-	errno := err.(syscall.Errno)
-	switch errno {
-	case syscall.EIO:
-		return [4]byte{}, t.dev.LastError()
-	case syscall.ENXIO:
-		return [4]byte{}, errors.New("tag not active")
-	case syscall.ENODEV:
-		return [4]byte{}, errors.New("tag is not a Mifare Ultralight tag")
-	case syscall.EINVAL:
-		return [4]byte{}, errors.New("invalid page")
-	default:
-		return [4]byte{}, err
-	}
+	return [4]byte{}, t.resolveError(err)
 }
 
 // Write one page of data from a Mifare Ultralight tag. page denotes the page
@@ -90,24 +75,7 @@ func (t UltralightTag) WritePage(page byte, data [4]byte) error {
 		return nil
 	}
 
-	// Error handling as above
-	if err == nil {
-		return errors.New("unknown error")
-	}
-
-	errno := err.(syscall.Errno)
-	switch errno {
-	case syscall.EIO:
-		return t.dev.LastError()
-	case syscall.ENXIO:
-		return errors.New("tag not active")
-	case syscall.ENODEV:
-		return errors.New("tag is not a Mifare Ultralight tag")
-	case syscall.EINVAL:
-		return errors.New("invalid page")
-	default:
-		return err
-	}
+	return t.resolveError(err)
 }
 
 // Authentificate to a Mifare Ultralight tag. Note that this only works with
@@ -118,25 +86,5 @@ func (t UltralightTag) Authenticate(key DESFireKey) error {
 		return nil
 	}
 
-	// error handling as above.
-	if err == nil {
-		// libfreefare <= 0.4.0 does not set errno on authentication
-		// failure, so assume that authentication failed when errno is
-		// not set.
-		return errors.New("authentication failed")
-	}
-
-	errno := err.(syscall.Errno)
-	switch errno {
-	case syscall.EIO:
-		return t.dev.LastError()
-	case syscall.ENXIO:
-		return errors.New("tag not active")
-	case syscall.ENODEV:
-		return errors.New("tag is not a Mifare UltralightC tag")
-	case syscall.EACCES:
-		return errors.New("authentication failed")
-	default:
-		return err
-	}
+	return t.resolveError(err)
 }

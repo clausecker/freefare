@@ -4,7 +4,6 @@ package freefare
 // #include <string.h>
 // #include <freefare.h>
 import "C"
-import "errors"
 import "unsafe"
 import "syscall"
 
@@ -84,29 +83,7 @@ func (t ClassicTag) ReadMad() (*Mad, error) {
 		return wrapMad(m), nil
 	}
 
-	if err == nil {
-		return nil, errors.New("authentication failed")
-	}
-
-	errno := err.(syscall.Errno)
-	switch errno {
-	case syscall.EIO:
-		return nil, t.dev.LastError()
-	case syscall.ENXIO:
-		return nil, errors.New("tag not active")
-	case syscall.ENODEV:
-		return nil, errors.New("tag is not a Mifare Classic tag")
-	case syscall.EINVAL:
-		return nil, errors.New("invalid block")
-	case syscall.EACCES:
-		return nil, errors.New("authentication failed")
-	case syscall.ENOTSUP:
-		return nil, errors.New("MAD version not supported")
-	case syscall.ENOMEM:
-		panic("C.malloc() returned nil (out of memory)")
-	default:
-		return nil, err
-	}
+	return nil, t.resolveError(err)
 }
 
 // Write a MAD to a Mifare tag using the provided Key-B keys.
@@ -122,29 +99,7 @@ func (t ClassicTag) WriteMad(m *Mad, sector00keyB, sector10keyB [6]byte) error {
 		return nil
 	}
 
-	if err == nil {
-		return errors.New("authentication failed")
-	}
-
-	errno := err.(syscall.Errno)
-	switch errno {
-	case syscall.EIO:
-		return t.dev.LastError()
-	case syscall.ENXIO:
-		return errors.New("tag not active")
-	case syscall.ENODEV:
-		return errors.New("tag is not a Mifare Classic tag")
-	case syscall.EINVAL:
-		return errors.New("invalid block")
-	case syscall.EACCES:
-		return errors.New("authentication failed")
-	case syscall.EPERM:
-		return errors.New("permission denied")
-	case syscall.ENOMEM:
-		panic("C.malloc() returned nil (out of memory)")
-	default:
-		return err
-	}
+	return t.resolveError(err)
 }
 
 // Get MAD version. This function wraps mad_get_version().
@@ -171,13 +126,13 @@ func (m *Mad) SetPublisherSector(cps byte) error {
 	}
 
 	if err == nil {
-		return errors.New("unknown error")
+		return Error(UNKNOWN_ERROR)
 	}
 
 	errno := err.(syscall.Errno)
 	switch errno {
 	case syscall.EINVAL:
-		return errors.New("invalid sector")
+		return Error(PARAMETER_ERROR)
 	default:
 		return err
 	}
@@ -194,13 +149,13 @@ func (m *Mad) Aid(sector byte) (MadAid, error) {
 
 	// this shouldn't happen, but libfreefare might have bugs
 	if err == nil {
-		return aid, errors.New("unknown error")
+		return aid, Error(UNKNOWN_ERROR)
 	}
 
 	errno := err.(syscall.Errno)
 	switch errno {
 	case syscall.EINVAL:
-		return aid, errors.New("invalid sector")
+		return aid, Error(PARAMETER_ERROR)
 	default:
 		return aid, err
 	}
@@ -215,13 +170,13 @@ func (m *Mad) SetAid(sector byte, aid MadAid) error {
 	}
 
 	if err == nil {
-		return errors.New("unknown error")
+		return Error(UNKNOWN_ERROR)
 	}
 
 	errno := err.(syscall.Errno)
 	switch errno {
 	case syscall.EINVAL:
-		return errors.New("invalid sector")
+		return Error(PARAMETER_ERROR)
 	default:
 		return err
 	}
@@ -310,29 +265,7 @@ func (t ClassicTag) ReadApplication(m *Mad, aid MadAid, buf []byte, key [6]byte,
 		return int(r), nil
 	}
 
-	if err == nil {
-		return -1, errors.New("authentication failed")
-	}
-
-	errno := err.(syscall.Errno)
-	switch errno {
-	case syscall.EIO:
-		return -1, t.dev.LastError()
-	case syscall.EBADF:
-		// libfreefare 0.4.0 does not check if malloc failed and wrongly
-		// reports EBADF if malloc failed.
-		return -1, errors.New("application not found")
-	case syscall.ENXIO:
-		return -1, errors.New("tag not active")
-	case syscall.ENODEV:
-		return -1, errors.New("tag is not a Mifare Classic tag")
-	case syscall.EINVAL:
-		return -1, errors.New("invalid block")
-	case syscall.EACCES:
-		return -1, errors.New("authentication failed")
-	default:
-		return -1, err
-	}
+	return -1, t.resolveError(err)
 }
 
 // Write the provided application sector to a Mifare Classic tag. This function
@@ -351,27 +284,5 @@ func (t ClassicTag) WriteApplication(m *Mad, aid MadAid, buf []byte, key [6]byte
 		return int(r), nil
 	}
 
-	if err == nil {
-		return -1, errors.New("authentication failed")
-	}
-
-	errno := err.(syscall.Errno)
-	switch errno {
-	case syscall.EIO:
-		return -1, t.dev.LastError()
-	case syscall.EBADF:
-		// libfreefare 0.4.0 does not check if malloc failed and wrongly
-		// reports EBADF if malloc failed.
-		return -1, errors.New("application not found")
-	case syscall.ENXIO:
-		return -1, errors.New("tag not active")
-	case syscall.ENODEV:
-		return -1, errors.New("tag is not a Mifare Classic tag")
-	case syscall.EINVAL:
-		return -1, errors.New("invalid block")
-	case syscall.EACCES:
-		return -1, errors.New("authentication failed")
-	default:
-		return -1, err
-	}
+	return -1, t.resolveError(err)
 }

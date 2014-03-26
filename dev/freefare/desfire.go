@@ -2,8 +2,6 @@ package freefare
 
 // #include <freefare.h>
 import "C"
-import "errors"
-import "syscall"
 
 // DESFire file types
 const (
@@ -20,20 +18,55 @@ type DESFireTag struct {
 	*Tag
 }
 
+// Get last PCD error. This function wraps mifare_desfire_last_pcd_error().
+func (t DESFireTag) LastPCDError() byte {
+	return byte(C.mifare_desfire_last_pcd_error(t.tag))
+}
+
+// Get last PICC error. This function wraps mifare_desfire_last_picc_error().
+func (t DESFireTag) LastPICCError() byte {
+	return byte(C.mifare_desfire_last_picc_error(t.tag))
+}
+
+// Figure out what kind of error is hidden behind an EIO. This function largely
+// replicates the behavior of freefare_strerror().
+func (t DESFireTag) resolveEIO() error {
+	err := t.dev.LastError()
+	if err != nil {
+		return err
+	}
+
+	enr := Error(t.LastPCDError())
+	if enr != OPERATION_OK {
+		return enr
+	}
+
+	enr = Error(t.LastPICCError())
+	if enr != OPERATION_OK {
+		return enr
+	}
+
+	return Error(UNKNOWN_ERROR)
+}
+
 // Connect to a Mifare DESFire tag. This causes the tag to be active.
 func (t DESFireTag) Connect() error {
-	return t.genericConnect(func(t C.MifareTag) (C.int, error) {
-		r, err := C.mifare_desfire_connect(t)
-		return r, err
-	})
+	r, err := C.mifare_desfire_connect(t.tag)
+	if r != 0 {
+		return t.resolveError(err)
+	}
+
+	return nil
 }
 
 // Disconnect from a Mifare DESFire tag. This causes the tag to be inactive.
 func (t DESFireTag) Disconnect() error {
-	return t.genericDisconnect(func(t C.MifareTag) (C.int, error) {
-		r, err := C.mifare_desfire_disconnect(t)
-		return r, err
-	})
+	r, err := C.mifare_desfire_disconnect(t.tag)
+	if r != 0 {
+		return t.resolveError(err)
+	}
+
+	return nil
 }
 
 // Authenticate to a Mifare DESFire tag. Notice that this wrapper does not
@@ -46,25 +79,5 @@ func (t DESFireTag) Authenticate(keyNo byte, key DESFireKey) error {
 		return nil
 	}
 
-	// error handling as above.
-	if err == nil {
-		// libfreefare <= 0.4.0 does not set errno on authentication
-		// failure, so assume that authentication failed when errno is
-		// not set.
-		return errors.New("authentication failed")
-	}
-
-	errno := err.(syscall.Errno)
-	switch errno {
-	case syscall.EIO:
-		return t.dev.LastError()
-	case syscall.ENXIO:
-		return errors.New("tag not active")
-	case syscall.ENODEV:
-		return errors.New("tag is not a Mifare UltralightC tag")
-	case syscall.EACCES:
-		return errors.New("authentication failed")
-	default:
-		return err
-	}
+	return t.resolveError(err)
 }

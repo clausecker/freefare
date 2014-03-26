@@ -7,6 +7,7 @@ import "C"
 import "errors"
 import "github.com/fuzxxl/nfc/0.2/nfc"
 import "unsafe"
+import "syscall"
 
 // This struct represents a Mifare tag of arbitrary type. You can figure out its
 // type with the Type() method. To access features of a specific type of tag,
@@ -63,10 +64,18 @@ func GetTags(d *nfc.Device) ([]*Tag, error) {
 		return nil, errors.New("device closed")
 	}
 
-	tagptr := C.freefare_get_tags(dd)
+	tagptr, err := C.freefare_get_tags(dd)
 	defer C.free(unsafe.Pointer(tagptr))
 	if tagptr == nil {
-		return nil, errors.New("cannot generate list of tags")
+		if err == nil {
+			return []*Tag{}, d.LastError()
+		}
+
+		if err.(syscall.Errno) == syscall.ENOMEM {
+			panic("C.malloc() returned nil (out of memory)")
+		}
+
+		return []*Tag{}, err
 	}
 
 	// freefare_get_tags returns a nil-terminated array of pointers.
@@ -95,11 +104,16 @@ func NewTag(d *nfc.Device, info *nfc.ISO14443aTarget) (*Tag, error) {
 	// an nfc_iso14443a_info so this is safe, although we waste a couple of
 	// bytes.1
 	cinfo := (*C.nfc_iso14443a_info)(unsafe.Pointer(info.Marshall()))
-	ctag := C.freefare_tag_new(dd, *cinfo)
+	ctag, err := C.freefare_tag_new(dd, *cinfo)
 	defer C.free(unsafe.Pointer(ctag))
 	if ctag == nil {
-		C.free(unsafe.Pointer(ctag))
-		return nil, errors.New("Could not create tag")
+		if err == nil {
+			return nil, errors.New("Could not create tag")
+		}
+
+		if err.(syscall.Errno) == syscall.ENOMEM {
+			panic("C.malloc() returned nil (out of memory)")
+		}
 	}
 
 	return wrapTag(ctag, d, cinfo), nil
