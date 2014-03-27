@@ -48,14 +48,14 @@ func (t DESFireTag) resolveEIO() error {
 		return err
 	}
 
-	err = Error(t.LastPCDError())
+	err = t.LastPCDError()
 	if err != nil {
-		return enr
+		return err
 	}
 
-	err = Error(t.LastPICCError())
+	err = t.LastPICCError()
 	if err != nil {
-		return enr
+		return err
 	}
 
 	return Error(UNKNOWN_ERROR)
