@@ -78,7 +78,7 @@ func NewMad(version byte) *Mad {
 
 // Read a MAD from a Mifare Classic tag. This function wraps mad_read().
 func (t ClassicTag) ReadMad() (*Mad, error) {
-	m, err := C.mad_read(t.tag)
+	m, err := C.mad_read(t.ctag)
 	if m != nil {
 		return wrapMad(m), nil
 	}
@@ -89,7 +89,7 @@ func (t ClassicTag) ReadMad() (*Mad, error) {
 // Write a MAD to a Mifare tag using the provided Key-B keys.
 func (t ClassicTag) WriteMad(m *Mad, sector00keyB, sector10keyB [6]byte) error {
 	r, err := C.mad_write(
-		t.tag,
+		t.ctag,
 		m.m,
 		(*C.uchar)(&sector00keyB[0]),
 		(*C.uchar)(&sector10keyB[0]),
@@ -254,7 +254,7 @@ func (m *Mad) FindApplication(aid MadAid) []byte {
 // error. This function wraps mifare_application_read().
 func (t ClassicTag) ReadApplication(m *Mad, aid MadAid, buf []byte, key [6]byte, keyType int) (int, error) {
 	r, err := C.mifare_application_read(
-		t.tag, m.m, aid.aid,
+		t.ctag, m.m, aid.aid,
 		unsafe.Pointer(&buf[0]),
 		C.size_t(len(buf)),
 		(*C.uchar)(&key[0]),
@@ -273,7 +273,7 @@ func (t ClassicTag) ReadApplication(m *Mad, aid MadAid, buf []byte, key [6]byte,
 // function wraps mifare_application_write().
 func (t ClassicTag) WriteApplication(m *Mad, aid MadAid, buf []byte, key [6]byte, keyType int) (int, error) {
 	r, err := C.mifare_application_write(
-		t.tag, m.m, aid.aid,
+		t.ctag, m.m, aid.aid,
 		unsafe.Pointer(&buf[0]),
 		C.size_t(len(buf)),
 		(*C.uchar)(&key[0]),

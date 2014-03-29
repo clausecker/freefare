@@ -102,7 +102,7 @@ func (e Error) Error() string {
 // Figure out what kind of error happened and translate it into out error codes.
 // Pass the error value you got from the libfreefare if available. This function
 // panics if e is not nil and not of type syscall.Errno.
-func (t *Tag) resolveError(e error) error {
+func (t *tag) resolveError(e error) error {
 	if e == nil {
 		return Error(UNKNOWN_ERROR)
 	}
@@ -120,6 +120,7 @@ func (t *Tag) resolveError(e error) error {
 	case syscall.ENXIO:
 		return Error(TAG_STATE_ERROR)
 	case syscall.ENOTSUP:
+		// Currently the only thing that is unsupported.
 		return Error(MAD_VERSION_NOTSUP)
 	case syscall.EPERM:
 		return Error(PERMISSION_ERROR)
@@ -137,7 +138,7 @@ func (t *Tag) resolveError(e error) error {
 		}
 	default:
 		// This should not happen, but in case the libfreefare decides
-		// to 
+		// to suddently return new errors, we should be prepared.
 		return e
 	}
 }

@@ -3,15 +3,15 @@ package freefare
 // #include <freefare.h>
 import "C"
 
-// Wrap a Tag into an UltralightTag to access functionality available for
+// Convert a Tag into an UltralightTag to access functionality available for
 // Mifare Ultralight tags.
 type UltralightTag struct {
-	*Tag
+	*tag
 }
 
 // Connect to a Mifare Ultralight tag. This causes the tag to be active.
 func (t UltralightTag) Connect() error {
-	r, err := C.mifare_ultralight_connect(t.tag)
+	r, err := C.mifare_ultralight_connect(t.ctag)
 	if r != 0 {
 		return t.resolveError(err)
 	}
@@ -21,7 +21,7 @@ func (t UltralightTag) Connect() error {
 
 // Disconnect from a Mifare Ultralight tag. This causes the tag to be inactive.
 func (t UltralightTag) Disconnect() error {
-	r, err := C.mifare_ultralight_disconnect(t.tag)
+	r, err := C.mifare_ultralight_disconnect(t.ctag)
 	if r != 0 {
 		return t.resolveError(err)
 	}
@@ -40,7 +40,7 @@ func (t UltralightTag) ReadPage(page byte) ([4]byte, error) {
 	var cdata C.MifareUltralightPage
 
 	r, err := C.mifare_ultralight_read(
-		t.tag,
+		t.ctag,
 		C.MifareUltralightPageNumber(page),
 		&cdata,
 	)
@@ -66,7 +66,7 @@ func (t UltralightTag) ReadPage(page byte) ([4]byte, error) {
 // Write() function from io.Writer.
 func (t UltralightTag) WritePage(page byte, data [4]byte) error {
 	r, err := C.mifare_ultralight_write(
-		t.tag,
+		t.ctag,
 		C.MifareUltralightPageNumber(page),
 		(*C.uchar)(&data[0]),
 	)
@@ -81,7 +81,7 @@ func (t UltralightTag) WritePage(page byte, data [4]byte) error {
 // Authentificate to a Mifare Ultralight tag. Note that this only works with
 // MifareUltralightC tags.
 func (t UltralightTag) Authenticate(key DESFireKey) error {
-	r, err := C.mifare_ultralightc_authenticate(t.tag, key.key)
+	r, err := C.mifare_ultralightc_authenticate(t.ctag, key.key)
 	if r == 0 {
 		return nil
 	}

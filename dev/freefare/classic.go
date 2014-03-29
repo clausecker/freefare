@@ -3,10 +3,10 @@ package freefare
 // #include <freefare.h>
 import "C"
 
-// Wrap a Tag into a ClassicTag to access functionality available for
+// Convert a Tag into a ClassicTag to access functionality available for
 // Mifare Classic tags.
 type ClassicTag struct {
-	*Tag
+	*tag
 }
 
 // Mifare Classic key types
@@ -17,7 +17,7 @@ const (
 
 // Connect to a Mifare Classic tag. This causes the tag to be active.
 func (t ClassicTag) Connect() error {
-	r, err := C.mifare_classic_connect(t.tag)
+	r, err := C.mifare_classic_connect(t.ctag)
 	if r != 0 {
 		return t.resolveError(err)
 	}
@@ -27,7 +27,7 @@ func (t ClassicTag) Connect() error {
 
 // Disconnect from a Mifare Classic tag. This causes the tag to be inactive.
 func (t ClassicTag) Disconnect() error {
-	r, err := C.mifare_classic_disconnect(t.tag)
+	r, err := C.mifare_classic_disconnect(t.ctag)
 	if r != 0 {
 		return t.resolveError(err)
 	}
@@ -45,7 +45,7 @@ func (t ClassicTag) Authenticate(block byte, key [6]byte, keyType int) error {
 	}
 
 	r, err := C.mifare_classic_authenticate(
-		t.tag,
+		t.ctag,
 		C.MifareClassicBlockNumber(block),
 		(*C.uchar)(&key[0]),
 		C.MifareClassicKeyType(keyType),
@@ -63,7 +63,7 @@ func (t ClassicTag) Authenticate(block byte, key [6]byte, keyType int) error {
 func (t ClassicTag) ReadBlock(block byte) ([16]byte, error) {
 	cdata := C.MifareClassicBlock{}
 
-	r, err := C.mifare_classic_read(t.tag, C.MifareClassicBlockNumber(block), &cdata)
+	r, err := C.mifare_classic_read(t.ctag, C.MifareClassicBlockNumber(block), &cdata)
 	if r == 0 {
 		bdata := [16]byte{}
 		for i, d := range cdata {
@@ -73,7 +73,6 @@ func (t ClassicTag) ReadBlock(block byte) ([16]byte, error) {
 		return bdata, nil
 	}
 
-
 	return [16]byte{}, t.resolveError(err)
 }
 
@@ -81,7 +80,7 @@ func (t ClassicTag) ReadBlock(block byte) ([16]byte, error) {
 // been renamed to avoid confusion with the Write() function from io.Writer.
 func (t ClassicTag) WriteBlock(block byte, data [16]byte) error {
 	r, err := C.mifare_classic_write(
-		t.tag,
+		t.ctag,
 		C.MifareClassicBlockNumber(block), (*C.uchar)(&data[0]),
 	)
 
@@ -95,7 +94,7 @@ func (t ClassicTag) WriteBlock(block byte, data [16]byte) error {
 // Increment the given value block by the provided amount
 func (t ClassicTag) Increment(block byte, amount uint32) error {
 	r, err := C.mifare_classic_increment(
-		t.tag,
+		t.ctag,
 		C.MifareClassicBlockNumber(block),
 		C.uint32_t(amount),
 	)
@@ -110,7 +109,7 @@ func (t ClassicTag) Increment(block byte, amount uint32) error {
 // Decrement the given value block by the provided amount
 func (t ClassicTag) Decrement(block byte, amount uint32) error {
 	r, err := C.mifare_classic_decrement(
-		t.tag,
+		t.ctag,
 		C.MifareClassicBlockNumber(block),
 		C.uint32_t(amount),
 	)
@@ -124,7 +123,7 @@ func (t ClassicTag) Decrement(block byte, amount uint32) error {
 
 // Restore the content of a block
 func (t ClassicTag) Restore(block byte) error {
-	r, err := C.mifare_classic_restore(t.tag, C.MifareClassicBlockNumber(block))
+	r, err := C.mifare_classic_restore(t.ctag, C.MifareClassicBlockNumber(block))
 	if r == 0 {
 		return nil
 	}
@@ -134,7 +133,7 @@ func (t ClassicTag) Restore(block byte) error {
 
 // Transfer the internal data register to the provided block
 func (t ClassicTag) Transfer(block byte) error {
-	r, err := C.mifare_classic_transfer(t.tag, C.MifareClassicBlockNumber(block))
+	r, err := C.mifare_classic_transfer(t.ctag, C.MifareClassicBlockNumber(block))
 	if r >= 0 {
 		return nil
 	}
@@ -169,12 +168,12 @@ func (t ClassicTag) TrailerBlockPermission(block byte, permission uint16, keyTyp
 
 	// Apparently, the libfreefare doesn't check if the tag actually is a
 	// Mifare Classic tag in this function. Let's do it ourselves.
-	if t := t.Type(); t != CLASSIC_1K && t != CLASSIC_4k {
+	if t := t.Type(); t != CLASSIC_1K && t != CLASSIC_4K {
 		return false, Error(INVALID_TAG_TYPE)
 	}
 
 	r, err := C.mifare_classic_get_trailer_block_permission(
-		t.tag,
+		t.ctag,
 		C.MifareClassicBlockNumber(block),
 		C.uint16_t(permission),
 		C.MifareClassicKeyType(keyType),
@@ -197,12 +196,12 @@ func (t ClassicTag) DataBlockPermission(block, permission byte, keyType int) (bo
 
 	// Apparently, the libfreefare doesn't check if the tag actually is a
 	// Mifare Classic tag in this function. Let's do it ourselves.
-	if t := t.Type(); t != CLASSIC_1K && t != CLASSIC_4k {
+	if t := t.Type(); t != CLASSIC_1K && t != CLASSIC_4K {
 		return false, Error(INVALID_TAG_TYPE)
 	}
 
 	r, err := C.mifare_classic_get_data_block_permission(
-		t.tag,
+		t.ctag,
 		C.MifareClassicBlockNumber(block),
 		C.uchar(permission),
 		C.MifareClassicKeyType(keyType),
@@ -219,7 +218,7 @@ func (t ClassicTag) DataBlockPermission(block, permission byte, keyType int) (bo
 
 // Reset a Mifare Classic target sector to factory default
 func (t ClassicTag) FormatSector(sector byte) error {
-	r, err := C.mifare_classic_format_sector(t.tag, C.MifareClassicSectorNumber(sector))
+	r, err := C.mifare_classic_format_sector(t.ctag, C.MifareClassicSectorNumber(sector))
 	if r == 0 {
 		return nil
 	}

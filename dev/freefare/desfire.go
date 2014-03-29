@@ -12,16 +12,16 @@ const (
 	CYCLIC_RECORD_FILE_WITH_BACKUP
 )
 
-// Wrap a Tag into an DESFireTag to access functionality available for
+// Convert a Tag into an DESFireTag to access functionality available for
 // Mifare DESFire tags.
 type DESFireTag struct {
-	*Tag
+	*tag
 }
 
 // Get last PCD error. This function wraps mifare_desfire_last_pcd_error(). If
 // no error has occured, this function returns nil.
 func (t DESFireTag) LastPCDError() error {
-	err := Error(C.mifare_desfire_last_pcd_error(t.tag))
+	err := Error(C.mifare_desfire_last_pcd_error(t.ctag))
 	if err == 0 {
 		return nil
 	} else {
@@ -32,7 +32,7 @@ func (t DESFireTag) LastPCDError() error {
 // Get last PICC error. This function wraps mifare_desfire_last_picc_error(). If
 // no error has occured, this function returns nil.
 func (t DESFireTag) LastPICCError() error {
-	err := Error(C.mifare_desfire_last_picc_error(t.tag))
+	err := Error(C.mifare_desfire_last_picc_error(t.ctag))
 	if err == 0 {
 		return nil
 	} else {
@@ -63,7 +63,7 @@ func (t DESFireTag) resolveEIO() error {
 
 // Connect to a Mifare DESFire tag. This causes the tag to be active.
 func (t DESFireTag) Connect() error {
-	r, err := C.mifare_desfire_connect(t.tag)
+	r, err := C.mifare_desfire_connect(t.ctag)
 	if r != 0 {
 		return t.resolveError(err)
 	}
@@ -73,7 +73,7 @@ func (t DESFireTag) Connect() error {
 
 // Disconnect from a Mifare DESFire tag. This causes the tag to be inactive.
 func (t DESFireTag) Disconnect() error {
-	r, err := C.mifare_desfire_disconnect(t.tag)
+	r, err := C.mifare_desfire_disconnect(t.ctag)
 	if r != 0 {
 		return t.resolveError(err)
 	}
@@ -86,7 +86,7 @@ func (t DESFireTag) Disconnect() error {
 // mifare_desfire_authenticate_aes() functions as the key type can be deducted
 // from the key.
 func (t DESFireTag) Authenticate(keyNo byte, key DESFireKey) error {
-	r, err := C.mifare_desfire_authenticate(t.tag, C.uint8_t(keyNo), key.key)
+	r, err := C.mifare_desfire_authenticate(t.ctag, C.uint8_t(keyNo), key.key)
 	if r == 0 {
 		return nil
 	}
@@ -97,7 +97,7 @@ func (t DESFireTag) Authenticate(keyNo byte, key DESFireKey) error {
 // Change the selected application settings to s. The application number of keys
 // cannot be changed after the application has been created.
 func (t DESFireTag) ChangeKeySettings(s byte) error {
-	r, err := C.mifare_desfire_change_key_settings(t.tag, C.uint8_t(s))
+	r, err := C.mifare_desfire_change_key_settings(t.ctag, C.uint8_t(s))
 	if r == 0 {
 		return nil
 	}

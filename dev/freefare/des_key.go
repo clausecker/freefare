@@ -15,11 +15,7 @@ func wrapDESFireKey(k C.MifareDESFireKey) *DESFireKey {
 		panic("C.malloc() returned nil (out of memory)")
 	}
 
-	key := new(DESFireKey)
-	key.key = k
-	key.finalizee = newFinalizee(unsafe.Pointer(k))
-
-	return key
+	return &DESFireKey{key: k, finalizee: newFinalizee(unsafe.Pointer(k))}
 }
 
 // Create a new DES key. This function wraps the verbosely named function
