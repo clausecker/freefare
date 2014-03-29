@@ -1,0 +1,5 @@
+Release 0.1 (2014-03-29):
+ * initial release. This release is a tentative release to get work on my
+   libopenkey wrapper started. A lot of functionality for DESFire tags is still
+   missing in this version. If you want to fiddle around with them, please wait
+   for the next version of this wrapper.
