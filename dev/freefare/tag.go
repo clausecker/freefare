@@ -13,9 +13,13 @@ import "syscall"
 // This interface represents a Mifare tag of arbitrary type. You can figure out
 // its type using the Type() method. To access features of a specific type of
 // tag, cast it to the appropriate tag type.
+//
+// This interface is not designed to have other packages implement it. If you do
+// so, strange things may happen.
 type Tag interface {
 	Connect() error
 	Disconnect() error
+	Pointer() uintptr
 	Type() int
 	UID() string
 
@@ -143,4 +147,15 @@ func NewTag(d *nfc.Device, info *nfc.ISO14443aTarget) (Tag, error) {
 	}
 
 	return wrapTag(ctag, d, cinfo), nil
+}
+
+// Get a pointer to the wrapped MifareTag structure. Be careful with this
+// pointer: This wrapper deallocates the MifareTag once the associated Tag
+// object becomes unreachable. Always keep a reference to the Tag structure when
+// doing fancy stuff with the pointer!
+//
+// For security reasons, this function returns an uintptr. Use the package
+// unsafe to do something with it.
+func (t *tag) Pointer() uintptr {
+	return uintptr(unsafe.Pointer(t.ctag))
 }
