@@ -93,3 +93,14 @@ func (t DESFireTag) Authenticate(keyNo byte, key DESFireKey) error {
 
 	return t.resolveError(err)
 }
+
+// Change the selected application settings to s. The application number of keys
+// cannot be changed after the application has been created.
+func (t DESFireTag) ChangeKeySettings(s byte) error {
+	r, err := C.mifare_desfire_change_key_settings(t.tag, C.uint8_t(s))
+	if r == 0 {
+		return nil
+	}
+
+	return t.resolveError(err)
+}
