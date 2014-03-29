@@ -3,7 +3,7 @@
 // used in Go. In order to use this wrapper, you also need the following
 // package:
 //
-//    import "github.com/fuzxxl/nfc/0.1/nfc"
+//    import "github.com/fuzxxl/nfc/0.2/nfc"
 package freefare
 
 // #include <freefare.h>
