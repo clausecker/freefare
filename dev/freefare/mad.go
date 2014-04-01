@@ -97,7 +97,7 @@ func (t ClassicTag) ReadMad() (*Mad, error) {
 		return wrapMad(m), nil
 	}
 
-	return nil, t.resolveError(err)
+	return nil, t.TranslateError(err)
 }
 
 // Write a MAD to a Mifare tag using the provided Key-B keys.
@@ -113,7 +113,7 @@ func (t ClassicTag) WriteMad(m *Mad, sector00keyB, sector10keyB [6]byte) error {
 		return nil
 	}
 
-	return t.resolveError(err)
+	return t.TranslateError(err)
 }
 
 // Get MAD version. This function wraps mad_get_version().
@@ -279,7 +279,7 @@ func (t ClassicTag) ReadApplication(m *Mad, aid MadAid, buf []byte, key [6]byte,
 		return int(r), nil
 	}
 
-	return -1, t.resolveError(err)
+	return -1, t.TranslateError(err)
 }
 
 // Write the provided application sector to a Mifare Classic tag. This function
@@ -298,5 +298,5 @@ func (t ClassicTag) WriteApplication(m *Mad, aid MadAid, buf []byte, key [6]byte
 		return int(r), nil
 	}
 
-	return -1, t.resolveError(err)
+	return -1, t.TranslateError(err)
 }

@@ -34,6 +34,7 @@ type Tag interface {
 	Connect() error
 	Disconnect() error
 	Pointer() uintptr
+	TranslateError(error) error
 	Type() int
 	UID() string
 

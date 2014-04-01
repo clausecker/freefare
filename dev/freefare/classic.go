@@ -33,7 +33,7 @@ const (
 func (t ClassicTag) Connect() error {
 	r, err := C.mifare_classic_connect(t.ctag)
 	if r != 0 {
-		return t.resolveError(err)
+		return t.TranslateError(err)
 	}
 
 	return nil
@@ -43,7 +43,7 @@ func (t ClassicTag) Connect() error {
 func (t ClassicTag) Disconnect() error {
 	r, err := C.mifare_classic_disconnect(t.ctag)
 	if r != 0 {
-		return t.resolveError(err)
+		return t.TranslateError(err)
 	}
 
 	return nil
@@ -69,7 +69,7 @@ func (t ClassicTag) Authenticate(block byte, key [6]byte, keyType int) error {
 		return nil
 	}
 
-	return t.resolveError(err)
+	return t.TranslateError(err)
 }
 
 // Read a block of data from a Mifare Classic tag. Notice that this function has
@@ -87,7 +87,7 @@ func (t ClassicTag) ReadBlock(block byte) ([16]byte, error) {
 		return bdata, nil
 	}
 
-	return [16]byte{}, t.resolveError(err)
+	return [16]byte{}, t.TranslateError(err)
 }
 
 // Write a block of data to a Mifare Classic tag. Notice that this function has
@@ -102,7 +102,7 @@ func (t ClassicTag) WriteBlock(block byte, data [16]byte) error {
 		return nil
 	}
 
-	return t.resolveError(err)
+	return t.TranslateError(err)
 }
 
 // Increment the given value block by the provided amount
@@ -117,7 +117,7 @@ func (t ClassicTag) Increment(block byte, amount uint32) error {
 		return nil
 	}
 
-	return t.resolveError(err)
+	return t.TranslateError(err)
 }
 
 // Decrement the given value block by the provided amount
@@ -132,7 +132,7 @@ func (t ClassicTag) Decrement(block byte, amount uint32) error {
 		return nil
 	}
 
-	return t.resolveError(err)
+	return t.TranslateError(err)
 }
 
 // Restore the content of a block
@@ -142,7 +142,7 @@ func (t ClassicTag) Restore(block byte) error {
 		return nil
 	}
 
-	return t.resolveError(err)
+	return t.TranslateError(err)
 }
 
 // Transfer the internal data register to the provided block
@@ -152,7 +152,7 @@ func (t ClassicTag) Transfer(block byte) error {
 		return nil
 	}
 
-	return t.resolveError(err)
+	return t.TranslateError(err)
 }
 
 // Mifare Classic access bits
@@ -199,7 +199,7 @@ func (t ClassicTag) TrailerBlockPermission(block byte, permission uint16, keyTyp
 		return r == 1, nil
 	}
 
-	return false, t.resolveError(err)
+	return false, t.TranslateError(err)
 }
 
 // Get information about data blocks
@@ -227,7 +227,7 @@ func (t ClassicTag) DataBlockPermission(block, permission byte, keyType int) (bo
 		return r == 1, nil
 	}
 
-	return false, t.resolveError(err)
+	return false, t.TranslateError(err)
 }
 
 // Reset a Mifare Classic target sector to factory default
@@ -237,7 +237,7 @@ func (t ClassicTag) FormatSector(sector byte) error {
 		return nil
 	}
 
-	return t.resolveError(err)
+	return t.TranslateError(err)
 }
 
 // Compute a Mifare Classic sector number from a block number

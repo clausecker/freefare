@@ -79,7 +79,7 @@ func (t DESFireTag) resolveEIO() error {
 func (t DESFireTag) Connect() error {
 	r, err := C.mifare_desfire_connect(t.ctag)
 	if r != 0 {
-		return t.resolveError(err)
+		return t.TranslateError(err)
 	}
 
 	return nil
@@ -89,7 +89,7 @@ func (t DESFireTag) Connect() error {
 func (t DESFireTag) Disconnect() error {
 	r, err := C.mifare_desfire_disconnect(t.ctag)
 	if r != 0 {
-		return t.resolveError(err)
+		return t.TranslateError(err)
 	}
 
 	return nil
@@ -105,7 +105,7 @@ func (t DESFireTag) Authenticate(keyNo byte, key DESFireKey) error {
 		return nil
 	}
 
-	return t.resolveError(err)
+	return t.TranslateError(err)
 }
 
 // Change the selected application settings to s. The application number of keys
@@ -116,5 +116,5 @@ func (t DESFireTag) ChangeKeySettings(s byte) error {
 		return nil
 	}
 
-	return t.resolveError(err)
+	return t.TranslateError(err)
 }

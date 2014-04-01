@@ -113,10 +113,20 @@ func (e Error) Error() string {
 	return str
 }
 
-// Figure out what kind of error happened and translate it into out error codes.
-// Pass the error value you got from the libfreefare if available. This function
-// panics if e is not nil and not of type syscall.Errno.
-func (t *tag) resolveError(e error) error {
+// Translate errno value into Go error. This function can be used in modules
+// that wrap C code that use the libfreefare. Use a two-return call to get the
+// value of errno and pass errno to TranslateError() if an error occured like
+// this:
+//
+//     ret, errno := C.do_something_with_a_tag(tag.Pointer())
+//     if error_occured {
+//         err := tag.TranslateError(errno)
+//         /* normal error handling with err */
+//     }
+//
+// If e is not a nil pointer and not of type syscall.Errno, this function
+// panics.
+func (t *tag) TranslateError(e error) error {
 	if e == nil {
 		return Error(UNKNOWN_ERROR)
 	}

@@ -27,7 +27,7 @@ type UltralightTag struct {
 func (t UltralightTag) Connect() error {
 	r, err := C.mifare_ultralight_connect(t.ctag)
 	if r != 0 {
-		return t.resolveError(err)
+		return t.TranslateError(err)
 	}
 
 	return nil
@@ -37,7 +37,7 @@ func (t UltralightTag) Connect() error {
 func (t UltralightTag) Disconnect() error {
 	r, err := C.mifare_ultralight_disconnect(t.ctag)
 	if r != 0 {
-		return t.resolveError(err)
+		return t.TranslateError(err)
 	}
 
 	return nil
@@ -68,7 +68,7 @@ func (t UltralightTag) ReadPage(page byte) ([4]byte, error) {
 		return [4]byte{}, nil
 	}
 
-	return [4]byte{}, t.resolveError(err)
+	return [4]byte{}, t.TranslateError(err)
 }
 
 // Write one page of data from a Mifare Ultralight tag. page denotes the page
@@ -89,7 +89,7 @@ func (t UltralightTag) WritePage(page byte, data [4]byte) error {
 		return nil
 	}
 
-	return t.resolveError(err)
+	return t.TranslateError(err)
 }
 
 // Authentificate to a Mifare Ultralight tag. Note that this only works with
@@ -100,5 +100,5 @@ func (t UltralightTag) Authenticate(key DESFireKey) error {
 		return nil
 	}
 
-	return t.resolveError(err)
+	return t.TranslateError(err)
 }
