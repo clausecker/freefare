@@ -26,6 +26,14 @@ const (
 	CYCLIC_RECORD_FILE_WITH_BACKUP
 )
 
+// DESFire cryptography modes. Compute the bitwise or of these constants and the
+// key number to select a certain cryptography mode.
+const (
+	CRYPTO_DES    = 0x00
+	CRYPTO_3K3DES = 0x40
+	CRYPTO_AES    = 0x80
+)
+
 // Convert a Tag into an DESFireTag to access functionality available for
 // Mifare DESFire tags.
 type DESFireTag struct {
@@ -117,4 +125,42 @@ func (t DESFireTag) ChangeKeySettings(s byte) error {
 	}
 
 	return t.TranslateError(err)
+}
+
+// Return the key settings and maximum number of keys for the selected
+// application.
+func (t DESFireTag) KeySettings() (settings, maxKeys byte, err error) {
+	var s, mk C.uint8_t
+	r, err := C.mifare_desfire_get_key_settings(t.ctag, &s, &mk)
+	if r != 0 {
+		return 0, 0, t.TranslateError(err)
+	}
+
+	settings = byte(s)
+	maxKeys = byte(mk)
+	err = nil
+	return
+}
+
+// Change the key keyNo from oldKey to newKey. Depending on the application
+// settings, a previous authentication with the same key or another key may be
+// required.
+func (t DESFireTag) ChangeKey(keyNo byte, newKey, oldKey DESFireKey) error {
+	r, err := C.mifare_desfire_change_key(t.ctag, C.uint8_t(keyNo), newKey.key, oldKey.key)
+	if r == 0 {
+		return nil
+	}
+
+	return t.TranslateError(err)
+}
+
+// Retrieve the version of the key keyNo for the selected application.
+func (t DESFireTag) KeyVersion(keyNo byte) (byte, error) {
+	var version C.uint8_t
+	r, err := C.mifare_desfire_get_key_version(t.ctag, C.uint8_t(keyNo), &version)
+	if r != 0 {
+		return 0, t.TranslateError(err)
+	}
+
+	return byte(version), nil
 }
