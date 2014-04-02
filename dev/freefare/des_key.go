@@ -108,3 +108,14 @@ func (k *DESFireKey) Version() byte {
 func (k *DESFireKey) SetVersion(version byte) {
 	C.mifare_desfire_key_set_version(k.key, C.uint8_t(version))
 }
+
+// Get a pointer to the wrapped MifareDESFireKey structure. Be careful with this
+// pointer: This wrapper deallocates the MifareDESFireKey once the associated
+// DESFireKey object becomes unreachable. Always keep a reference to the
+// DESFireKey structure when doing fancy stuff with the pointer!
+//
+// For security reasons, this function returns an uintptr. Use the package
+// unsafe to do something with it.
+func (k *DESFireKey) Pointer() uintptr {
+	return uintptr(unsafe.Pointer(k.key))
+}
