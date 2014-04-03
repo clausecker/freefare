@@ -33,7 +33,7 @@ func NewDESFireAidWithMadAid(ma MadAid, n byte) DESFireAid {
 
 // Return an integer representationn
 func (aid DESFireAid) Aid() uint32 {
-	return uint32(aid[0]) | uint32(aid[1])<<8 | uint32(aid[2])<<12
+	return uint32(aid[0]) | uint32(aid[1])<<8 | uint32(aid[2])<<16
 }
 
 // Return a pointer typed C.MifareDESFireAid for convenience
