@@ -15,6 +15,7 @@
 package freefare
 
 // #include <freefare.h>
+// #include <stdlib.h>
 import "C"
 import "unsafe"
 
@@ -247,4 +248,46 @@ func (t DESFireTag) ApplicationIds() ([]DESFireAid, error) {
 
 	C.mifare_desfire_free_application_ids(caids)
 	return aids, nil
+}
+
+// A Mifare DESFire directory file
+type DESFireDF struct {
+	DESFireAid
+	Fid  uint16 // file ID
+	Name []byte // no longer than 16 bytes
+}
+
+// Retrieve a list of directory file (df) names
+func (t DESFireTag) DFNames() ([]DESFireDF, error) {
+	var count C.size_t
+	var cdfs *C.MifareDESFireDF
+	r, err := C.mifare_desfire_get_df_names(t.ctag, &cdfs, &count)
+	if r != 0 {
+		return nil, t.TranslateError(err)
+	}
+
+	dfs := make([]DESFireDF, int(count))
+	dfsptr := uintptr(unsafe.Pointer(cdfs))
+	for i := range dfs {
+		dfptr := (*C.MifareDESFireDF)(unsafe.Pointer(dfsptr + uintptr(i)*unsafe.Sizeof(*cdfs)))
+		dfs[i] = DESFireDF{
+			NewDESFireAid(uint32(dfptr.aid)),
+			uint16(dfptr.fid),
+			C.GoBytes(unsafe.Pointer(&dfptr.df_name[0]), C.int(dfptr.df_name_len)),
+		}
+	}
+
+	C.free(unsafe.Pointer(dfsptr))
+	return dfs, nil
+}
+
+// Select an application. After Connect(), the master application is selected.
+// This function can be used to select a different application.
+func (t DESFireTag) SelectApplication(aid DESFireAid) error {
+	r, err := C.mifare_desfire_select_application(t.ctag, aid.cptr())
+	if r != 0 {
+		return t.TranslateError(err)
+	}
+
+	return nil
 }
