@@ -14,7 +14,11 @@
 
 package freefare
 
+// /* workaround: type is a reserved keyword, but mifare_desfire_version_info
+//  * contains a member named type. Let's rename it to avoid trouble */
+// #define type type_
 // #include <freefare.h>
+// #undef type
 // #include <stdlib.h>
 import "C"
 import "unsafe"
@@ -290,4 +294,134 @@ func (t DESFireTag) SelectApplication(aid DESFireAid) error {
 	}
 
 	return nil
+}
+
+// Reset t to factory defaults. For this function to work, a previous
+// authentication with the card master key is required. WARNING: This function
+// is irreversible and will delete all date on the card.
+func (t DESFireTag) FormatPICC() error {
+	r, err := C.mifare_desfire_format_picc(t.ctag)
+	if r != 0 {
+		return t.TranslateError(err)
+	}
+
+	return nil
+}
+
+// Version information for a Mifare DESFire tag.
+type DESFireVersionInfo struct {
+	Hardware, Software struct {
+		VendorId                   byte
+		Type, Subtype              byte
+		VersionMajor, VersionMinor byte
+		StorageSize                byte
+		Protocol                   byte
+	}
+
+	Uid                            [7]byte
+	BatchNumber                    [5]byte
+	ProductionWeek, ProductionYear byte
+}
+
+// Retrieve various information about t including UID. batch number, production
+// date, hardware and software information.
+func (t DESFireTag) Version() (DESFireVersionInfo, error) {
+	var ci C.struct_mifare_desfire_version_info
+	r, err := C.mifare_desfire_get_version(t.ctag, &ci)
+	if r != 0 {
+		return DESFireVersionInfo{}, t.TranslateError(err)
+	}
+
+	vi := DESFireVersionInfo{}
+
+	vih := &vi.Hardware
+	vih.VendorId = byte(ci.hardware.vendor_id)
+	vih.Type = byte(ci.hardware.type_)
+	vih.Subtype = byte(ci.hardware.subtype)
+	vih.VersionMajor = byte(ci.hardware.version_major)
+	vih.VersionMinor = byte(ci.hardware.version_minor)
+	vih.StorageSize = byte(ci.hardware.storage_size)
+	vih.Protocol = byte(ci.hardware.protocol)
+
+	vis := &vi.Software
+	vis.VendorId = byte(ci.software.vendor_id)
+	vis.Type = byte(ci.software.type_)
+	vis.Subtype = byte(ci.software.subtype)
+	vis.VersionMajor = byte(ci.software.version_major)
+	vis.VersionMinor = byte(ci.software.version_minor)
+	vis.StorageSize = byte(ci.software.storage_size)
+	vis.Protocol = byte(ci.software.protocol)
+
+	for i := range vi.Uid {
+		vi.Uid[i] = byte(ci.uid[i])
+	}
+
+	for i := range vi.BatchNumber {
+		vi.BatchNumber[i] = byte(ci.batch_number[i])
+	}
+
+	vi.ProductionWeek = byte(ci.production_week)
+	vi.ProductionYear = byte(ci.production_year)
+
+	return vi, nil
+}
+
+// Get the amount of free memory on the PICC of a Mifare DESFire tag in bytes.
+func (t DESFireTag) FreeMem() (uint32, error) {
+	var size C.uint32_t
+	r, err := C.mifare_desfire_free_mem(t.ctag, &size)
+	if r != 0 {
+		return 0, t.TranslateError(err)
+	}
+
+	return uint32(size), nil
+}
+
+// This function can be used to deactivate the format function or to switch
+// to use a random UID.
+func (t DESFireTag) SetConfiguration(disableFormat, enableRandomUid bool) error {
+	// Notice that bool is a macro. the actual type is named _Bool.
+	r, err := C.mifare_desfire_set_configuration(
+		t.ctag, C._Bool(disableFormat), C._Bool(enableRandomUid))
+	if r != 0 {
+		return t.TranslateError(err)
+	}
+
+	return nil
+}
+
+// Replace the ATS bytes returned by the PICC when it is selected. This function
+// performs the following extra test in order to ensure memory safety:
+//
+//     if len(ats) < int(ats[0]) {
+//         return Error(PARAMETER_ERROR)
+//     }
+func (t DESFireTag) SetAts(ats []byte) error {
+	// mifare_desfire_set_ats reads ats[0] bytes out of ats, so it better
+	// had be that long.
+	if len(ats) < int(ats[0]) {
+		return Error(PARAMETER_ERROR)
+	}
+
+	r, err := C.mifare_desfire_set_ats(t.ctag, (*C.uint8_t)(&ats[0]))
+	if r != 0 {
+		return t.TranslateError(err)
+	}
+
+	return nil
+}
+
+// Get the card's UID. This function can be used to get the original UID of the
+// target if the PICC is configured to return a random UID. The return value of
+// CardUID() has the same format as the return value of UID(), but this function
+// may fail.
+func (t DESFireTag) CardUID() (string, error) {
+	var cstring *C.char
+	r, err := C.mifare_desfire_get_card_uid(t.ctag, &cstring)
+	defer C.free(unsafe.Pointer(cstring))
+	if r != 0 {
+		return "", t.TranslateError(err)
+	}
+
+	return C.GoString(cstring), nil
 }
