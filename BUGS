@@ -41,7 +41,7 @@ mifare_desfire.c
   uint8_t *files[] (array of pointers to uint8_t). This should probably have
   been uint8_t (*files)[] (pointer to array of uint8_t). The same issue appears
   in mifare_desfire_get_iso_file_ids(): parameter uint16_t *files[] should have
-  type uint16_t (*files)[]. (Not filed yet)
+  type uint16_t (*files)[]. (filed as issue #26)
 
 freefare.c
 
