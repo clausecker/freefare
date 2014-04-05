@@ -20,6 +20,7 @@ package freefare
 // #include <freefare.h>
 // #undef type
 // #include <stdlib.h>
+// #include <string.h>
 import "C"
 import "unsafe"
 
@@ -424,4 +425,34 @@ func (t DESFireTag) CardUID() (string, error) {
 	}
 
 	return C.GoString(cstring), nil
+}
+
+// Return a list of files in the selected application
+func (t DESFireTag) FileIds() ([]byte, error) {
+	var cfiles *C.uint8_t
+	var count C.size_t
+	r, err := C.mifare_desfire_get_file_ids(t.ctag, &cfiles, &count)
+	defer C.free(unsafe.Pointer(cfiles))
+	if r != 0 {
+		return nil, t.TranslateError(err)
+	}
+
+	return C.GoBytes(unsafe.Pointer(cfiles), C.int(count)), nil
+}
+
+// Return a list of ISO file identifiers
+func (t DESFireTag) IsoFileIds() ([]uint16, error) {
+	var cfiles *C.uint16_t
+	var count C.size_t
+	r, err := C.mifare_desfire_get_iso_file_ids(t.ctag, &cfiles, &count)
+	defer C.free(unsafe.Pointer(cfiles))
+	if r != 0 {
+		return nil, t.TranslateError(err)
+	}
+
+	// Cutting corners here
+	ids := make([]uint16, int(count))
+	C.memcpy(unsafe.Pointer(&ids[0]), unsafe.Pointer(cfiles), count)
+
+	return ids, nil
 }
