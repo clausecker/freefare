@@ -34,3 +34,16 @@ mifare_application.c
   return valueo of mifare_application_find, it does not check if the NULL result
   came from malloc-failure and unconditionally returns EBADF instead of ENOMEM.
   (Reported as additional patch to issue #23)
+
+mifare_desfire.c
+
+* The function mifare_desfire_get_file_ids() has an argument files of type
+  uint8_t *files[] (array of pointers to uint8_t). This should probably have
+  been uint8_t (*files)[] (pointer to array of uint8_t). The same issue appears
+  in mifare_desfire_get_iso_file_ids(): parameter uint16_t *files[] should have
+  type uint16_t (*files)[]. (Not filed yet)
+
+freefare.c
+
+* The function freefare_get_tag_uid() does not check the return value of
+  malloc, potentially causing crashes or memory corruption. (filed as issue #25)
