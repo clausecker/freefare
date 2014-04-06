@@ -19,7 +19,6 @@ package freefare
 // #include <stdlib.h>
 import "C"
 import "errors"
-import "fmt"
 import "github.com/fuzxxl/nfc/1.0/nfc"
 import "unsafe"
 import "syscall"
@@ -35,11 +34,10 @@ type Tag interface {
 	Device() nfc.Device
 	Disconnect() error
 	Pointer() uintptr
+	String() string
 	TranslateError(error) error
 	Type() int
 	UID() string
-
-	fmt.Stringer
 }
 
 // Generic tag structure to hold all the underlying details
