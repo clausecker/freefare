@@ -97,6 +97,10 @@ func (t *tag) String() string {
 func (t *tag) UID() string {
 	cptr := C.freefare_get_tag_uid(t.ctag)
 	defer C.free(unsafe.Pointer(cptr))
+	if cptr == nil {
+		panic("C.malloc() returned nil (out of memory)")
+	}
+
 	return C.GoString(cptr)
 }
 
