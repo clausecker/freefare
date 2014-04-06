@@ -95,7 +95,7 @@ func (t DESFireTag) LastPICCError() error {
 // Figure out what kind of error is hidden behind an EIO. This function largely
 // replicates the behavior of freefare_strerror().
 func (t DESFireTag) resolveEIO() error {
-	err := t.dev.LastError()
+	err := t.Device().LastError()
 	if err != nil {
 		return err
 	}

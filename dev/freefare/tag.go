@@ -32,6 +32,7 @@ import "syscall"
 // so, strange things may happen.
 type Tag interface {
 	Connect() error
+	Device() nfc.Device
 	Disconnect() error
 	Pointer() uintptr
 	TranslateError(error) error
@@ -79,6 +80,11 @@ const (
 	CLASSIC_4K
 	DESFIRE
 )
+
+// Get the nfc.Devcice that was used to create t
+func (t *tag) Device() nfc.Device {
+	return t.dev
+}
 
 // Get the type of a Tag. The returned integer can be compared against the
 // supplied constants to figure out what kind of tag it is.

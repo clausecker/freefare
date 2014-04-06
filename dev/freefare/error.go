@@ -158,7 +158,7 @@ func (t *tag) TranslateError(e error) error {
 		if t.Type() == DESFIRE {
 			return DESFireTag{t}.resolveEIO()
 		} else {
-			return t.dev.LastError()
+			return t.Device().LastError()
 		}
 	default:
 		// This should not happen, but in case the libfreefare decides
