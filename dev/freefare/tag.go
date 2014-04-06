@@ -20,7 +20,7 @@ package freefare
 import "C"
 import "errors"
 import "fmt"
-import "github.com/fuzxxl/nfc/0.2/nfc"
+import "github.com/fuzxxl/nfc/1.0/nfc"
 import "unsafe"
 import "syscall"
 
@@ -44,14 +44,14 @@ type Tag interface {
 // Generic tag structure to hold all the underlying details
 type tag struct {
 	ctag C.MifareTag
-	dev  *nfc.Device
+	dev  nfc.Device
 	info *C.nfc_iso14443a_info // may be nil
 	*finalizee
 }
 
 // Wrap a C.MifareTag and set a finalizer to automatically free the tag once it
 // becomes unreachable.
-func wrapTag(t C.MifareTag, d *nfc.Device, i *C.nfc_iso14443a_info) Tag {
+func wrapTag(t C.MifareTag, d nfc.Device, i *C.nfc_iso14443a_info) Tag {
 	tag := &tag{t, d, i, newFinalizee(unsafe.Pointer(t))}
 	var aTag Tag
 	switch tag.Type() {
@@ -107,7 +107,7 @@ func (t *tag) UID() string {
 // Get a list of the MIFARE targets near to the provided NFC initiator. If the
 // list of tags cannot be generated, an error is returned. The Go wrapper takes
 // care of allocating and deallocating Tags. No precautions are needed.
-func GetTags(d *nfc.Device) ([]Tag, error) {
+func GetTags(d nfc.Device) ([]Tag, error) {
 	dd := devicePointer(d)
 	if dd == nil {
 		return nil, errors.New("device closed")
@@ -143,7 +143,7 @@ func GetTags(d *nfc.Device) ([]Tag, error) {
 // Automagically allocate a Tag given a device and target info. The Go
 // wrapper takes care of allocating and deallocating Tags. No precautions
 // are needed. The Baud field of the info parameter is not evaluated.
-func NewTag(d *nfc.Device, info *nfc.ISO14443aTarget) (Tag, error) {
+func NewTag(d nfc.Device, info *nfc.ISO14443aTarget) (Tag, error) {
 	dd := devicePointer(d)
 	if dd == nil {
 		return nil, errors.New("device closed")

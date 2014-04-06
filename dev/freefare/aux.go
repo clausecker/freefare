@@ -17,15 +17,15 @@
 // used in Go. In order to use this wrapper, you also need the following
 // package:
 //
-//    import "github.com/fuzxxl/nfc/0.2/nfc"
+//    import "github.com/fuzxxl/nfc/1.0/nfc"
 package freefare
 
 // #include <freefare.h>
 import "C"
-import "github.com/fuzxxl/nfc/0.2/nfc"
+import "github.com/fuzxxl/nfc/1.0/nfc"
 import "unsafe"
 
 // This wraps nfc.(*Device).Pointer() to return a correctly typed pointer.
-func devicePointer(d *nfc.Device) *C.nfc_device {
+func devicePointer(d nfc.Device) *C.nfc_device {
 	return (*C.nfc_device)(unsafe.Pointer(d.Pointer()))
 }
