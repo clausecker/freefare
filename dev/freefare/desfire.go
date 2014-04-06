@@ -14,17 +14,40 @@
 
 package freefare
 
-// /* workaround: type is a reserved keyword, but mifare_desfire_version_info
-//  * contains a member named type. Let's rename it to avoid trouble */
-// #define type type_
-// #include <freefare.h>
-// #undef type
-// #include <stdlib.h>
-// #include <string.h>
+/*
+#include <stdlib.h>
+#include <string.h>
+
+// workaround: type is a reserved keyword, but mifare_desfire_version_info
+// contains a member named type. Let's rename it to avoid trouble
+#define type type_
+#include <freefare.h>
+#undef type
+
+// auxilliary typedefs to ease the implementation of
+// DESFireTag.DESFireFileSettings
+typedef struct {
+	uint32_t file_size;
+} standard_file;
+
+typedef struct {
+	int32_t lower_limit;
+	int32_t upper_limit;
+	int32_t limited_credit_value;
+	uint8_t limited_credit_enabled;
+} value_file;
+
+typedef struct {
+	uint32_t record_size;
+	uint32_t max_number_of_records;
+	uint32_t current_number_of_records;
+} linear_record_file;
+*/
 import "C"
+import "strconv"
 import "unsafe"
 
-// DESFire file types
+// DESFire file types as used in DESFireFileSettings
 const (
 	STANDARD_DATA_FILE = iota
 	BACKUP_DATA_FILE
@@ -455,4 +478,72 @@ func (t DESFireTag) IsoFileIds() ([]uint16, error) {
 	C.memcpy(unsafe.Pointer(&ids[0]), unsafe.Pointer(cfiles), count)
 
 	return ids, nil
+}
+
+// This type remodels struct mifare_desfire_file_settings. Because Go does not
+// support union types, this struct contains all union members laid out
+// sequentially. Only the set of members denoted by FileType is valid. Use the
+// supplied constants for FileType.
+type DESFireFileSettings struct {
+	FileType              byte
+	CommunicationSettings byte
+	AccessRights          byte
+
+	// FileType == STANDARD_DATA_FILE || FileType == BACKUP_DATA_FILE
+	FileSize uint32
+
+	// FileType == VALUE_FILE_WITH_BACKUP
+	LowerLimit, UpperLimit int32
+	LimitedCreditValue     int32
+	LimitedCreditEnabled   byte
+
+	// FileType == LINEAR_RECORD_FILE_WITH_BACKUP || CYCLIC_RECORD_FILE_WITH_BACKUP
+	RecordSize             uint32
+	MaxNumberOfRecords     uint32
+	CurrentNumberOfRecords uint32
+}
+
+// Retrieve the settings of the file fileNo of the selected application of t.
+func (t DESFireTag) DESFireFileSettings(fileNo byte) (DESFireFileSettings, error) {
+	var cfs C.struct_mifare_desfire_file_settings
+	r, err := C.mifare_desfire_get_file_settings(t.ctag, C.uint8_t(fileNo), &cfs)
+	if r != 0 {
+		// explicitly invalid FileType. Behavior is subject to change.
+		return DESFireFileSettings{FileType: 0xff}, t.TranslateError(err)
+	}
+
+	fs := DESFireFileSettings{
+		FileType:              byte(cfs.file_type),
+		CommunicationSettings: byte(cfs.communication_settings),
+		AccessRights:          byte(cfs.access_rights),
+	}
+
+	sptr := unsafe.Pointer(&cfs.settings[0])
+	switch fs.FileType {
+	case STANDARD_DATA_FILE:
+		fallthrough
+	case BACKUP_DATA_FILE:
+		sf := (*C.standard_file)(sptr)
+		fs.FileSize = uint32(sf.file_size)
+
+	case VALUE_FILE_WITH_BACKUP:
+		vf := (*C.value_file)(sptr)
+		fs.LowerLimit = int32(vf.lower_limit)
+		fs.UpperLimit = int32(vf.upper_limit)
+		fs.LimitedCreditValue = int32(vf.limited_credit_value)
+		fs.LimitedCreditEnabled = byte(vf.limited_credit_enabled)
+
+	case LINEAR_RECORD_FILE_WITH_BACKUP:
+		fallthrough
+	case CYCLIC_RECORD_FILE_WITH_BACKUP:
+		lrf := (*C.linear_record_file)(sptr)
+		fs.RecordSize = uint32(lrf.record_size)
+		fs.MaxNumberOfRecords = uint32(lrf.max_number_of_records)
+		fs.CurrentNumberOfRecords = uint32(lrf.current_number_of_records)
+
+	default:
+		panic("Unexpected file type " + strconv.Itoa(int(fs.FileType)))
+	}
+
+	return fs, nil
 }
