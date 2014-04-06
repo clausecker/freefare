@@ -47,15 +47,6 @@ import "C"
 import "strconv"
 import "unsafe"
 
-// DESFire file types as used in DESFireFileSettings
-const (
-	STANDARD_DATA_FILE = iota
-	BACKUP_DATA_FILE
-	VALUE_FILE_WITH_BACKUP
-	LINEAR_RECORD_FILE_WITH_BACKUP
-	CYCLIC_RECORD_FILE_WITH_BACKUP
-)
-
 // DESFire cryptography modes. Compute the bitwise or of these constants and the
 // key number to select a certain cryptography mode.
 const (
@@ -480,14 +471,60 @@ func (t DESFireTag) IsoFileIds() ([]uint16, error) {
 	return ids, nil
 }
 
+// DESFire file types as used in DESFireFileSettings
+const (
+	STANDARD_DATA_FILE = iota
+	BACKUP_DATA_FILE
+	VALUE_FILE_WITH_BACKUP
+	LINEAR_RECORD_FILE_WITH_BACKUP
+	CYCLIC_RECORD_FILE_WITH_BACKUP
+)
+
+// Mifare DESFire communication modes
+const (
+	PLAIN      = 0x00
+	MACED      = 0x01
+	ENCIPHERED = 0x03
+)
+
+// Mifare DESFire access rights. This wrapper does not provide the constants
+// MDAR_KEY0 ... MDAR_KEY13 as they are just 0 ... 13.
+const (
+	FREE = 0xe
+	DENY = 0xf
+)
+
+// Create an uint16 out of individual access rights. This function only looks
+// at the low nibbles of each parameter. This function implements the
+// functionality of the MDAR macro from the freefare.h header.
+func MakeDESFireAccessRights(read, write, readWrite, changeAccessRights byte) uint16 {
+	ar := uint16(read&0xf) << 12
+	ar |= uint16(write&0xf) << 8
+	ar |= uint16(readWrite&0xf) << 4
+	ar |= uint16(changeAccessRights&0xf) << 0
+	return ar
+}
+
+// Split an access rights block into individual access rights. This function
+// implements the functionality of the MDAR_### family of macros.
+func SplitDESFireAccessRights(ar uint16) (read, write, readWrite, changeAccessRights byte) {
+	read = byte(ar >> 12 & 0xf)
+	write = byte(ar >> 8 & 0xf)
+	readWrite = byte(ar >> 4 & 0xf)
+	changeAccessRights = byte(ar >> 0 & 0xf)
+	return
+}
+
 // This type remodels struct mifare_desfire_file_settings. Because Go does not
 // support union types, this struct contains all union members laid out
 // sequentially. Only the set of members denoted by FileType is valid. Use the
 // supplied constants for FileType.
+//
+// Use the function SplitDESFireAccessRights() to split the AccessRights field.
 type DESFireFileSettings struct {
 	FileType              byte
 	CommunicationSettings byte
-	AccessRights          byte
+	AccessRights          uint16
 
 	// FileType == STANDARD_DATA_FILE || FileType == BACKUP_DATA_FILE
 	FileSize uint32
@@ -515,7 +552,7 @@ func (t DESFireTag) DESFireFileSettings(fileNo byte) (DESFireFileSettings, error
 	fs := DESFireFileSettings{
 		FileType:              byte(cfs.file_type),
 		CommunicationSettings: byte(cfs.communication_settings),
-		AccessRights:          byte(cfs.access_rights),
+		AccessRights:          uint16(cfs.access_rights),
 	}
 
 	sptr := unsafe.Pointer(&cfs.settings[0])
@@ -546,4 +583,17 @@ func (t DESFireTag) DESFireFileSettings(fileNo byte) (DESFireFileSettings, error
 	}
 
 	return fs, nil
+}
+
+// Change the communication settings and access rights of file fileNo of the
+// selected application of t. Use the function MakeDESFireAccessRights() to
+// create a suitable accessRights parameter.
+func (t DESFireTag) ChangeFileSettings(fileNo, communicationSettings byte, accessRights uint16) error {
+	r, err := C.mifare_desfire_change_file_settings(
+		t.ctag, C.uint8_t(fileNo), C.uint8_t(communicationSettings), C.uint16_t(accessRights))
+	if r != 0 {
+		return t.TranslateError(err)
+	}
+
+	return nil
 }
