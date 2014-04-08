@@ -597,3 +597,176 @@ func (t DESFireTag) ChangeFileSettings(fileNo, communicationSettings byte, acces
 
 	return nil
 }
+
+// Create a standard or backup data file of size fileSize. This function wraps
+// either mifare_desfire_create_std_data_file() or
+// mifare_desfire_create_backup_data_file() depending on the value of isBackup.
+func (t DESFireTag) CreateDataFile(
+	fileNo byte,
+	communicationSettings byte,
+	accessRights uint16,
+	fileSize uint32,
+	isBackup bool,
+) error {
+	var r C.int
+	var err error
+
+	if isBackup {
+		r, err = C.mifare_desfire_create_std_data_file(
+			t.ctag, C.uint8_t(fileNo),
+			C.uint8_t(communicationSettings),
+			C.uint16_t(accessRights), C.uint32_t(fileSize))
+	} else {
+		r, err = C.mifare_desfire_create_backup_data_file(
+			t.ctag, C.uint8_t(fileNo),
+			C.uint8_t(communicationSettings),
+			C.uint16_t(accessRights), C.uint32_t(fileSize))
+	}
+
+	if r != 0 {
+		return t.TranslateError(err)
+	}
+
+	return nil
+}
+
+// Create a standard or backup data file of size fileSize with an ISO file ID.
+// This function wraps either mifare_desfire_create_std_data_file_iso() or
+// mifare_desfire_create_backup_data_file_iso() depending on the value of
+// isBackup.
+func (t DESFireTag) CreateDataFileIso(
+	fileNo byte,
+	communicationSettings byte,
+	accessRights uint16,
+	fileSize uint32,
+	isoFileId uint16,
+	isBackup bool,
+) error {
+	var r C.int
+	var err error
+
+	if isBackup {
+		r, err = C.mifare_desfire_create_std_data_file_iso(
+			t.ctag, C.uint8_t(fileNo),
+			C.uint8_t(communicationSettings),
+			C.uint16_t(accessRights), C.uint32_t(fileSize),
+			C.uint16_t(isoFileId))
+	} else {
+		r, err = C.mifare_desfire_create_backup_data_file_iso(
+			t.ctag, C.uint8_t(fileNo),
+			C.uint8_t(communicationSettings),
+			C.uint16_t(accessRights), C.uint32_t(fileSize),
+			C.uint16_t(isoFileId))
+	}
+
+	if r != 0 {
+		return t.TranslateError(err)
+	}
+
+	return nil
+}
+
+// Create a value file of value value constrained in the range lowerLimit to
+// upperLimit and with the limitedCreditEnable settings.
+func (t DESFireTag) CreateValueFile(
+	fileNo byte,
+	communicationSettings byte,
+	accessRights uint16,
+	lowerLimit, upperLimit, value int32,
+	limitedCreditEnable byte,
+) error {
+	r, err := C.mifare_desfire_create_value_file(
+		t.ctag, C.uint8_t(fileNo),
+		C.uint8_t(communicationSettings),
+		C.uint16_t(accessRights), C.int32_t(lowerLimit),
+		C.int32_t(upperLimit), C.int32_t(value),
+		C.uint8_t(limitedCreditEnable))
+	if r != 0 {
+		return t.TranslateError(err)
+	}
+
+	return nil
+}
+
+// Create linear or cyclic record file that can holf maxNumberOfRecords of size
+// recordSize. This function wraps either
+// mifare_desfire_create_linear_record_file() or
+// mifare_desfire_create_cyclic_record_file() depending on the value of the
+// isCyclic parameter.
+func (t DESFireTag) CreateRecordFile(
+	fileNo byte,
+	communicationSettings byte,
+	accessRights uint16,
+	recordSize uint32,
+	maxNumberOfRecords uint32,
+	isCyclic bool,
+) error {
+	var r C.int
+	var err error
+	if isCyclic {
+		r, err = C.mifare_desfire_create_cyclic_record_file(
+			t.ctag, C.uint8_t(fileNo),
+			C.uint8_t(communicationSettings),
+			C.uint16_t(accessRights), C.uint32_t(recordSize),
+			C.uint32_t(maxNumberOfRecords))
+	} else {
+		r, err = C.mifare_desfire_create_linear_record_file(
+			t.ctag, C.uint8_t(fileNo),
+			C.uint8_t(communicationSettings),
+			C.uint16_t(accessRights), C.uint32_t(recordSize),
+			C.uint32_t(maxNumberOfRecords))
+	}
+
+	if r != 0 {
+		return t.TranslateError(err)
+	}
+
+	return nil
+}
+
+// Create linear or cyclic record file that can holf maxNumberOfRecords of size
+// recordSize with an ISO file ID. This function wraps either
+// mifare_desfire_create_linear_record_file_iso() or
+// mifare_desfire_create_cyclic_record_file_iso() depending on the value of the
+// isCyclic parameter.
+func (t DESFireTag) CreateRecordFileIso(
+	fileNo byte,
+	communicationSettings byte,
+	accessRights uint16,
+	recordSize uint32,
+	maxNumberOfRecords uint32,
+	isoFileId uint16,
+	isCyclic bool,
+) error {
+	var r C.int
+	var err error
+	if isCyclic {
+		r, err = C.mifare_desfire_create_cyclic_record_file_iso(
+			t.ctag, C.uint8_t(fileNo),
+			C.uint8_t(communicationSettings),
+			C.uint16_t(accessRights), C.uint32_t(recordSize),
+			C.uint32_t(maxNumberOfRecords), C.uint16_t(isoFileId))
+	} else {
+		r, err = C.mifare_desfire_create_linear_record_file_iso(
+			t.ctag, C.uint8_t(fileNo),
+			C.uint8_t(communicationSettings),
+			C.uint16_t(accessRights), C.uint32_t(recordSize),
+			C.uint32_t(maxNumberOfRecords), C.uint16_t(isoFileId))
+	}
+
+	if r != 0 {
+		return t.TranslateError(err)
+	}
+
+	return nil
+}
+
+// Remove the file fileNo from the selected application
+func (t DESFireTag) DeleteFile(fileNo byte) error {
+	r, err := C.mifare_desfire_delete_file(t.ctag, C.uint8_t(fileNo))
+	if r != 0 {
+		return t.TranslateError(err)
+	}
+
+	return nil
+}
