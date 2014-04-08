@@ -156,7 +156,7 @@ func (t *tag) TranslateError(e error) error {
 		panic("C.malloc() returned nil (out of memory)")
 	case syscall.EIO:
 		if t.Type() == DESFIRE {
-			return DESFireTag{t}.resolveEIO()
+			return DESFireTag{tag: t}.resolveEIO()
 		} else {
 			return t.Device().LastError()
 		}

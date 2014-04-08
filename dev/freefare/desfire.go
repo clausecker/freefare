@@ -55,10 +55,29 @@ const (
 	CRYPTO_AES    = 0x80
 )
 
+// Mifare DESFire communication modes
+const (
+	PLAIN      = 0x00
+	MACED      = 0x01
+	ENCIPHERED = 0x03
+
+	// let the wrapper deduct the communication mode
+	DEFAULT    = 0xff
+)
+
 // Convert a Tag into an DESFireTag to access functionality available for
-// Mifare DESFire tags.
+// Mifare DESFire tags. As opposed to the libfreefare itself, this wrapper does
+// not provide data-level operations with explicit communication settings.
+// Instead, the wrapper uses the settings stored in the DESFireTag struct or
+// automatically detects them (as if the libfreefare non-ex function was called)
+// if they are set to DEFAULT. When this wrapper creates a new DESFireTag,
+// WriteSettings and ReadSettings are set to DEFAULT so each data access
+// operation behaves like the underlying libfreefare function.
 type DESFireTag struct {
 	*tag
+
+	// communication settings
+	WriteSettings, ReadSettings byte
 }
 
 // Get last PCD error. This function wraps mifare_desfire_last_pcd_error(). If
@@ -478,13 +497,6 @@ const (
 	VALUE_FILE_WITH_BACKUP
 	LINEAR_RECORD_FILE_WITH_BACKUP
 	CYCLIC_RECORD_FILE_WITH_BACKUP
-)
-
-// Mifare DESFire communication modes
-const (
-	PLAIN      = 0x00
-	MACED      = 0x01
-	ENCIPHERED = 0x03
 )
 
 // Mifare DESFire access rights. This wrapper does not provide the constants

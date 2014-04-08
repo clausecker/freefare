@@ -63,7 +63,7 @@ func wrapTag(t C.MifareTag, d nfc.Device, i *C.nfc_iso14443a_info) Tag {
 	case CLASSIC_4K:
 		aTag = ClassicTag{tag}
 	case DESFIRE:
-		aTag = DESFireTag{tag}
+		aTag = DESFireTag{tag, DEFAULT, DEFAULT}
 	default:
 		panic("This shouldn't happen. Please report a bug.")
 	}
