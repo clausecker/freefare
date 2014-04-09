@@ -135,7 +135,7 @@ func SplitDESFireAccessRights(ar uint16) (read, write, readWrite, changeAccessRi
 }
 
 // Retrieve the settings of the file fileNo of the selected application of t.
-func (t DESFireTag) DESFireFileSettings(fileNo byte) (DESFireFileSettings, error) {
+func (t DESFireTag) FileSettings(fileNo byte) (DESFireFileSettings, error) {
 	var cfs C.struct_mifare_desfire_file_settings
 	r, err := C.mifare_desfire_get_file_settings(t.ctag, C.uint8_t(fileNo), &cfs)
 	if r != 0 {
