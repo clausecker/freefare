@@ -43,6 +43,10 @@ mifare_desfire.c
   in mifare_desfire_get_iso_file_ids(): parameter uint16_t *files[] should have
   type uint16_t (*files)[]. (filed as issue #26)
 
+* The function mifare_desfire_read_data() writes more than length bytes into the
+  data buffer. This is undocumented and I was unable to deduct how long the
+  buffer is supposed to be. (filed as issue #28)
+
 freefare.c
 
 * The function freefare_get_tag_uid() does not check the return value of
