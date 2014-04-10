@@ -54,16 +54,16 @@ func wrapTag(t C.MifareTag, d nfc.Device, i *C.nfc_iso14443a_info) Tag {
 	tag := &tag{t, d, i, newFinalizee(unsafe.Pointer(t))}
 	var aTag Tag
 	switch tag.Type() {
-	case ULTRALIGHT:
+	case Ultralight:
 		fallthrough
-	case ULTRALIGHT_C:
+	case UltralightC:
 		aTag = UltralightTag{tag}
-	case CLASSIC_1K:
+	case Classic1k:
 		fallthrough
-	case CLASSIC_4K:
+	case Classic4k:
 		aTag = ClassicTag{tag}
-	case DESFIRE:
-		aTag = DESFireTag{tag, DEFAULT, DEFAULT}
+	case DESFire:
+		aTag = DESFireTag{tag, Default, Default}
 	default:
 		panic("This shouldn't happen. Please report a bug.")
 	}
@@ -72,11 +72,11 @@ func wrapTag(t C.MifareTag, d nfc.Device, i *C.nfc_iso14443a_info) Tag {
 
 // Mifare tag types
 const (
-	ULTRALIGHT = iota
-	ULTRALIGHT_C
-	CLASSIC_1K
-	CLASSIC_4K
-	DESFIRE
+	Ultralight = iota
+	UltralightC
+	Classic1k
+	Classic4k
+	DESFire
 )
 
 // Get the nfc.Devcice that was used to create t

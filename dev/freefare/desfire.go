@@ -30,19 +30,19 @@ import "unsafe"
 // DESFire cryptography modes. Compute the bitwise or of these constants and the
 // key number to select a certain cryptography mode.
 const (
-	CRYPTO_DES    = 0x00
-	CRYPTO_3K3DES = 0x40
-	CRYPTO_AES    = 0x80
+	CryptoDES    = 0x00
+	Crypto3k3DES = 0x40
+	CryptoAES    = 0x80
 )
 
 // Mifare DESFire communication modes
 const (
-	PLAIN      = 0x00
-	MACED      = 0x01
-	ENCIPHERED = 0x03
+	Plain      = 0x00
+	Maced      = 0x01
+	Enciphered = 0x03
 
 	// let the wrapper deduct the communication mode
-	DEFAULT = 0xff
+	Default = 0xff
 )
 
 // Convert a Tag into an DESFireTag to access functionality available for
@@ -100,7 +100,7 @@ func (t DESFireTag) resolveEIO() error {
 		return err
 	}
 
-	return Error(UNKNOWN_ERROR)
+	return Error(UnknownError)
 }
 
 // Connect to a Mifare DESFire tag. This causes the tag to be active.
@@ -320,7 +320,7 @@ func (t DESFireTag) SetAts(ats []byte) error {
 	// mifare_desfire_set_ats reads ats[0] bytes out of ats, so it better
 	// had be that long.
 	if len(ats) < int(ats[0]) {
-		return Error(PARAMETER_ERROR)
+		return Error(ParameterError)
 	}
 
 	r, err := C.mifare_desfire_set_ats(t.ctag, (*C.uint8_t)(&ats[0]))

@@ -25,8 +25,8 @@ type ClassicTag struct {
 
 // Mifare Classic key types
 const (
-	KEY_A = iota
-	KEY_B
+	KeyA = iota
+	KeyB
 )
 
 // Connect to a Mifare Classic tag. This causes the tag to be active.
@@ -54,8 +54,8 @@ func (t ClassicTag) Disconnect() error {
 func (t ClassicTag) Authenticate(block byte, key [6]byte, keyType int) error {
 	// libfreefare does not check if keyType is actually valid so we have to
 	// do that instead.
-	if keyType != KEY_A && keyType != KEY_B {
-		return Error(PARAMETER_ERROR)
+	if keyType != KeyA && keyType != KeyB {
+		return Error(ParameterError)
 	}
 
 	r, err := C.mifare_classic_authenticate(
@@ -157,33 +157,33 @@ func (t ClassicTag) Transfer(block byte) error {
 
 // Mifare Classic access bits
 const (
-	MCAB_I = 1 << iota
-	MCAB_D
-	MCAB_W
-	MCAB_R
+	AccessBitI = 1 << iota
+	AccessBitD
+	AccessBitW
+	AccessBitR
 )
 
 // Other Mifare Classic constants
 const (
-	MCAB_WRITE_KEYB = 1 << (2 * iota)
-	MCAB_READ_KEYB
-	MCAB_WRITE_ACCESS_BITS
-	MCAB_READ_ACCESS_BITS
-	MCAB_WRITE_KEYA
-	MCAB_READ_KEYA
+	WriteKeyB = 1 << (2 * iota)
+	ReadKeyB
+	WriteAccessBits
+	ReadAccessBits
+	WriteKeyA
+	ReadKeyA
 )
 
 // Get information about the trailer block. Use the provided constants for
 // keyType. This function doesn't work for block 0.
 func (t ClassicTag) TrailerBlockPermission(block byte, permission uint16, keyType int) (bool, error) {
-	if keyType != KEY_A && keyType != KEY_B {
-		return false, Error(PARAMETER_ERROR)
+	if keyType != KeyA && keyType != KeyB {
+		return false, Error(ParameterError)
 	}
 
 	// Apparently, the libfreefare doesn't check if the tag actually is a
 	// Mifare Classic tag in this function. Let's do it ourselves.
-	if t := t.Type(); t != CLASSIC_1K && t != CLASSIC_4K {
-		return false, Error(INVALID_TAG_TYPE)
+	if t := t.Type(); t != Classic1k && t != Classic4k {
+		return false, Error(InvalidTagType)
 	}
 
 	r, err := C.mifare_classic_get_trailer_block_permission(
@@ -204,14 +204,14 @@ func (t ClassicTag) TrailerBlockPermission(block byte, permission uint16, keyTyp
 
 // Get information about data blocks
 func (t ClassicTag) DataBlockPermission(block, permission byte, keyType int) (bool, error) {
-	if keyType != KEY_A && keyType != KEY_B {
-		return false, Error(PARAMETER_ERROR)
+	if keyType != KeyA && keyType != KeyB {
+		return false, Error(ParameterError)
 	}
 
 	// Apparently, the libfreefare doesn't check if the tag actually is a
 	// Mifare Classic tag in this function. Let's do it ourselves.
-	if t := t.Type(); t != CLASSIC_1K && t != CLASSIC_4K {
-		return false, Error(INVALID_TAG_TYPE)
+	if t := t.Type(); t != Classic1k && t != Classic4k {
+		return false, Error(InvalidTagType)
 	}
 
 	r, err := C.mifare_classic_get_data_block_permission(

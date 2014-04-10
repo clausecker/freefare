@@ -140,13 +140,13 @@ func (m *Mad) SetPublisherSector(cps byte) error {
 	}
 
 	if err == nil {
-		return Error(UNKNOWN_ERROR)
+		return Error(UnknownError)
 	}
 
 	errno := err.(syscall.Errno)
 	switch errno {
 	case syscall.EINVAL:
-		return Error(PARAMETER_ERROR)
+		return Error(ParameterError)
 	default:
 		return err
 	}
@@ -163,13 +163,13 @@ func (m *Mad) Aid(sector byte) (MadAid, error) {
 
 	// this shouldn't happen, but libfreefare might have bugs
 	if err == nil {
-		return aid, Error(UNKNOWN_ERROR)
+		return aid, Error(UnknownError)
 	}
 
 	errno := err.(syscall.Errno)
 	switch errno {
 	case syscall.EINVAL:
-		return aid, Error(PARAMETER_ERROR)
+		return aid, Error(ParameterError)
 	default:
 		return aid, err
 	}
@@ -184,13 +184,13 @@ func (m *Mad) SetAid(sector byte, aid MadAid) error {
 	}
 
 	if err == nil {
-		return Error(UNKNOWN_ERROR)
+		return Error(UnknownError)
 	}
 
 	errno := err.(syscall.Errno)
 	switch errno {
 	case syscall.EINVAL:
-		return Error(PARAMETER_ERROR)
+		return Error(ParameterError)
 	default:
 		return err
 	}

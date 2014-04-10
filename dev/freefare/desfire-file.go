@@ -44,18 +44,18 @@ import "unsafe"
 
 // DESFire file types as used in DESFireFileSettings
 const (
-	STANDARD_DATA_FILE = iota
-	BACKUP_DATA_FILE
-	VALUE_FILE_WITH_BACKUP
-	LINEAR_RECORD_FILE_WITH_BACKUP
-	CYCLIC_RECORD_FILE_WITH_BACKUP
+	StandardDataFile = iota
+	BackupDataFile
+	ValueFileWithBackup
+	LinearRecordFileWithBackup
+	CyclicRecordFileWithBackup
 )
 
 // Mifare DESFire access rights. This wrapper does not provide the constants
 // MDAR_KEY0 ... MDAR_KEY13 as they are just 0 ... 13.
 const (
-	FREE = 0xe
-	DENY = 0xf
+	Free = 0xe
+	Deny = 0xf
 )
 
 // This type remodels struct mifare_desfire_file_settings. Because Go does not
@@ -151,22 +151,22 @@ func (t DESFireTag) FileSettings(fileNo byte) (DESFireFileSettings, error) {
 
 	sptr := unsafe.Pointer(&cfs.settings[0])
 	switch fs.FileType {
-	case STANDARD_DATA_FILE:
+	case StandardDataFile:
 		fallthrough
-	case BACKUP_DATA_FILE:
+	case BackupDataFile:
 		sf := (*C.standard_file)(sptr)
 		fs.FileSize = uint32(sf.file_size)
 
-	case VALUE_FILE_WITH_BACKUP:
+	case ValueFileWithBackup:
 		vf := (*C.value_file)(sptr)
 		fs.LowerLimit = int32(vf.lower_limit)
 		fs.UpperLimit = int32(vf.upper_limit)
 		fs.LimitedCreditValue = int32(vf.limited_credit_value)
 		fs.LimitedCreditEnabled = byte(vf.limited_credit_enabled)
 
-	case LINEAR_RECORD_FILE_WITH_BACKUP:
+	case LinearRecordFileWithBackup:
 		fallthrough
-	case CYCLIC_RECORD_FILE_WITH_BACKUP:
+	case CyclicRecordFileWithBackup:
 		lrf := (*C.linear_record_file)(sptr)
 		fs.RecordSize = uint32(lrf.record_size)
 		fs.MaxNumberOfRecords = uint32(lrf.max_number_of_records)

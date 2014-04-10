@@ -34,7 +34,7 @@ func (t DESFireTag) ReadData(fileNo byte, offset int64, buf []byte) (int, error)
 	// sanity checks first. This function uses an int64 for offset to be
 	// similar to the io.ReaderAt interface
 	if offset < 0 {
-		return -1, Error(PARAMETER_ERROR)
+		return -1, Error(ParameterError)
 	}
 
 	if len(buf) == 0 {
@@ -43,7 +43,7 @@ func (t DESFireTag) ReadData(fileNo byte, offset int64, buf []byte) (int, error)
 
 	var r C.ssize_t
 	var err error
-	if t.ReadSettings == DEFAULT {
+	if t.ReadSettings == Default {
 		r, err = C.mifare_desfire_read_data(
 			t.ctag, C.uint8_t(fileNo), C.off_t(offset),
 			C.size_t(len(buf)), unsafe.Pointer(&buf[0]))
@@ -70,12 +70,12 @@ func (t DESFireTag) WriteData(fileNo byte, offset int64, buf []byte) (int, error
 	// sanity checks first. This function uses an int64 for offset to be
 	// similar to the io.ReaderAt interface
 	if offset < 0 {
-		return -1, Error(PARAMETER_ERROR)
+		return -1, Error(ParameterError)
 	}
 
 	var r C.ssize_t
 	var err error
-	if t.WriteSettings == DEFAULT {
+	if t.WriteSettings == Default {
 		r, err = C.mifare_desfire_write_data(
 			t.ctag, C.uint8_t(fileNo), C.off_t(offset),
 			C.size_t(len(buf)), unsafe.Pointer(&buf[0]))
@@ -101,7 +101,7 @@ func (t DESFireTag) Value(fileNo byte) (int32, error) {
 	var r C.int
 	var err error
 	var val C.int32_t
-	if t.ReadSettings == DEFAULT {
+	if t.ReadSettings == Default {
 		r, err = C.mifare_desfire_get_value(
 			t.ctag, C.uint8_t(fileNo), &val)
 	} else {
@@ -123,7 +123,7 @@ func (t DESFireTag) Value(fileNo byte) (int32, error) {
 func (t DESFireTag) Credit(fileNo byte, amount int32) error {
 	var r C.int
 	var err error
-	if t.WriteSettings == DEFAULT {
+	if t.WriteSettings == Default {
 		r, err = C.mifare_desfire_credit(
 			t.ctag, C.uint8_t(fileNo), C.int32_t(amount))
 	} else {
@@ -146,7 +146,7 @@ func (t DESFireTag) Credit(fileNo byte, amount int32) error {
 func (t DESFireTag) Debit(fileNo byte, amount int32) error {
 	var r C.int
 	var err error
-	if t.WriteSettings == DEFAULT {
+	if t.WriteSettings == Default {
 		r, err = C.mifare_desfire_debit(
 			t.ctag, C.uint8_t(fileNo), C.int32_t(amount))
 	} else {
@@ -169,7 +169,7 @@ func (t DESFireTag) Debit(fileNo byte, amount int32) error {
 func (t DESFireTag) LimitedCredit(fileNo byte, amount int32) error {
 	var r C.int
 	var err error
-	if t.WriteSettings == DEFAULT {
+	if t.WriteSettings == Default {
 		r, err = C.mifare_desfire_limited_credit(
 			t.ctag, C.uint8_t(fileNo), C.int32_t(amount))
 	} else {
@@ -194,12 +194,12 @@ func (t DESFireTag) WriteRecord(fileNo byte, offset int64, buf []byte) (int, err
 	// sanity checks first. This function uses an int64 for offset to be
 	// similar to the io.ReaderAt interface
 	if offset < 0 {
-		return -1, Error(PARAMETER_ERROR)
+		return -1, Error(ParameterError)
 	}
 
 	var r C.ssize_t
 	var err error
-	if t.WriteSettings == DEFAULT {
+	if t.WriteSettings == Default {
 		r, err = C.mifare_desfire_write_record(
 			t.ctag, C.uint8_t(fileNo), C.off_t(offset),
 			C.size_t(len(buf)), unsafe.Pointer(&buf[0]))
@@ -230,7 +230,7 @@ func (t DESFireTag) ReadRecords(fileNo byte, offset int64, buf []byte) (int, err
 	// sanity checks first. This function uses an int64 for offset to be
 	// similar to the io.ReaderAt interface
 	if offset < 0 {
-		return -1, Error(PARAMETER_ERROR)
+		return -1, Error(ParameterError)
 	}
 
 	if len(buf) == 0 {
@@ -239,7 +239,7 @@ func (t DESFireTag) ReadRecords(fileNo byte, offset int64, buf []byte) (int, err
 
 	var r C.ssize_t
 	var err error
-	if t.ReadSettings == DEFAULT {
+	if t.ReadSettings == Default {
 		r, err = C.mifare_desfire_read_records(
 			t.ctag, C.uint8_t(fileNo), C.off_t(offset),
 			C.size_t(len(buf)), unsafe.Pointer(&buf[0]))
