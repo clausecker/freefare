@@ -42,7 +42,7 @@ const (
 	ENCIPHERED = 0x03
 
 	// let the wrapper deduct the communication mode
-	DEFAULT    = 0xff
+	DEFAULT = 0xff
 )
 
 // Convert a Tag into an DESFireTag to access functionality available for

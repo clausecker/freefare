@@ -99,7 +99,6 @@ func (t DESFireTag) ApplicationIds() ([]DESFireAid, error) {
 	return aids, nil
 }
 
-
 // Select an application. After Connect(), the master application is selected.
 // This function can be used to select a different application.
 func (t DESFireTag) SelectApplication(aid DESFireAid) error {
