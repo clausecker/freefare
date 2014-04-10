@@ -2,12 +2,12 @@ This is a Go wrapper for the libfreefare. It has been written against version
 0.4.0 of the libfreefare but should work just fine with later versions. The code
 is untested and should not be used in production code without further testing.
 
-Please notice that this release is a tentative release to get work on my
-libopenkey wrapper started. A lot of functionality for DESFire tags is still
-missing in this version. If you want to fiddle around with them, please wait for
-the next version of this wrapper.
+Please notice that this release contains a possibly memory corrupting issue in
+freefare.DESFireTag.ReadData() and freefare.DESFireTag.ReadRecords(). This issue
+is caused by a bug in the libfreefare and will be fixed as soon as the authors
+of the libfreefare provide me with more information.
 
-The current release of this wrapper is release 0.1. Successive releases will be
+The current release of this wrapper is release 0.2. Successive releases will be
 placed in different subfolders as to not change the semantics of code that links
 against a specific version of this wrapper. The general folder structure is
 

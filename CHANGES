@@ -1,5 +1,29 @@
+Each item is prefixed with one of the following letters:
+
+ B bugfix
+ K Known bug
+ C compatible expansion without adding new symbols
+ I incompatible change
+ N new function, method or variable in the API
+ R general remark
+
 Release 0.1 (2014-03-29):
- * initial release. This release is a tentative release to get work on my
+ R initial release. This release is a tentative release to get work on my
    libopenkey wrapper started. A lot of functionality for DESFire tags is still
    missing in this version. If you want to fiddle around with them, please wait
    for the next version of this wrapper.
+
+Release 0.2 (2014-04-10):
+ I Bump nfc dependency to 1.0
+ I Rename constants to fit Go naming conventions
+ C Amend the freefare.Tag interface. This is a compatible extension as you're
+   not supposed to create custom types that implement this interface
+ N Add wrappers for all the remaining libfreefare functionality
+ N Add method freefare.Tag.TranslateError() which might be useful for people
+   who want to wrap libfreefare-based C code with this wrapper
+ B Fix a couple of bugs
+ B Work around a couple of bugs in the libfreefare
+ K Using freefare.DESFireTag.ReadData() or freefare.DESFireTag.ReadRecords()
+   might cause memory corruption as the underlying libfreefare functions may
+   write more data to buf then specified. This issue will be fixed as soon as I
+   figure out a relyable way to tell how much extra space I need.
