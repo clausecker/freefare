@@ -231,14 +231,14 @@ func (t DESFireTag) FormatPICC() error {
 // Version information for a Mifare DESFire tag.
 type DESFireVersionInfo struct {
 	Hardware, Software struct {
-		VendorId                   byte
+		VendorID                   byte
 		Type, Subtype              byte
 		VersionMajor, VersionMinor byte
 		StorageSize                byte
 		Protocol                   byte
 	}
 
-	Uid                            [7]byte
+	UID                            [7]byte
 	BatchNumber                    [5]byte
 	ProductionWeek, ProductionYear byte
 }
@@ -255,7 +255,7 @@ func (t DESFireTag) Version() (DESFireVersionInfo, error) {
 	vi := DESFireVersionInfo{}
 
 	vih := &vi.Hardware
-	vih.VendorId = byte(ci.hardware.vendor_id)
+	vih.VendorID = byte(ci.hardware.vendor_id)
 	vih.Type = byte(ci.hardware.type_)
 	vih.Subtype = byte(ci.hardware.subtype)
 	vih.VersionMajor = byte(ci.hardware.version_major)
@@ -264,7 +264,7 @@ func (t DESFireTag) Version() (DESFireVersionInfo, error) {
 	vih.Protocol = byte(ci.hardware.protocol)
 
 	vis := &vi.Software
-	vis.VendorId = byte(ci.software.vendor_id)
+	vis.VendorID = byte(ci.software.vendor_id)
 	vis.Type = byte(ci.software.type_)
 	vis.Subtype = byte(ci.software.subtype)
 	vis.VersionMajor = byte(ci.software.version_major)
@@ -272,8 +272,8 @@ func (t DESFireTag) Version() (DESFireVersionInfo, error) {
 	vis.StorageSize = byte(ci.software.storage_size)
 	vis.Protocol = byte(ci.software.protocol)
 
-	for i := range vi.Uid {
-		vi.Uid[i] = byte(ci.uid[i])
+	for i := range vi.UID {
+		vi.UID[i] = byte(ci.uid[i])
 	}
 
 	for i := range vi.BatchNumber {
@@ -299,10 +299,10 @@ func (t DESFireTag) FreeMem() (uint32, error) {
 
 // This function can be used to deactivate the format function or to switch
 // to use a random UID.
-func (t DESFireTag) SetConfiguration(disableFormat, enableRandomUid bool) error {
+func (t DESFireTag) SetConfiguration(disableFormat, enableRandomUID bool) error {
 	// Notice that bool is a macro. the actual type is named _Bool.
 	r, err := C.mifare_desfire_set_configuration(
-		t.ctag, C._Bool(disableFormat), C._Bool(enableRandomUid))
+		t.ctag, C._Bool(disableFormat), C._Bool(enableRandomUID))
 	if r != 0 {
 		return t.TranslateError(err)
 	}

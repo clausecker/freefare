@@ -161,7 +161,7 @@ func NewTag(d nfc.Device, info *nfc.ISO14443aTarget) (Tag, error) {
 	defer C.free(unsafe.Pointer(ctag))
 	if ctag == nil {
 		if err == nil {
-			return nil, errors.New("Could not create tag")
+			return nil, errors.New("could not create tag")
 		}
 
 		if err.(syscall.Errno) == syscall.ENOMEM {

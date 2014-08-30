@@ -44,7 +44,7 @@ func (t DESFireTag) CreateApplicationIso(
 	settings byte,
 	keyNo byte,
 	wantIsoFileIdentifiers bool,
-	isoFileId uint16,
+	isoFileID uint16,
 	isoFileName []byte,
 ) error {
 	wifi := C.int(0)
@@ -58,7 +58,7 @@ func (t DESFireTag) CreateApplicationIso(
 		C.uint8_t(settings),
 		C.uint8_t(keyNo),
 		wifi,
-		C.uint16_t(isoFileId),
+		C.uint16_t(isoFileID),
 		(*C.uint8_t)(&isoFileName[0]),
 		C.size_t(len(isoFileName)))
 	if r != 0 {
