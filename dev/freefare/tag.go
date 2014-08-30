@@ -19,7 +19,7 @@ package freefare
 // #include <stdlib.h>
 import "C"
 import "errors"
-import "github.com/fuzxxl/nfc/1.0/nfc"
+import "github.com/fuzxxl/nfc/2.0/nfc"
 import "unsafe"
 import "syscall"
 
