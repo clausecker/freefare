@@ -1,4 +1,4 @@
-// Copyright (c) 2014, Robert Clausecker <fuzxxl@gmail.com>
+// Copyright (c) 2014, 2019 Robert Clausecker <fuzxxl@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published by the
@@ -181,4 +181,9 @@ func NewTag(d nfc.Device, info *nfc.ISO14443aTarget) (Tag, error) {
 // unsafe to do something with it.
 func (t *tag) Pointer() uintptr {
 	return uintptr(unsafe.Pointer(t.ctag))
+}
+
+// This wraps nfc.(*Device).Pointer() to return a correctly typed pointer.
+func devicePointer(d nfc.Device) *C.nfc_device {
+	return (*C.nfc_device)(unsafe.Pointer(d.Pointer()))
 }
