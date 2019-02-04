@@ -35,3 +35,7 @@ Release 0.3 (2014-08-30):
    compile once more.
  I Rename some fields to fit Go naming conventions.
  C Rename some function parameters.
+
+Release 0.3.1 (2019-02-04):
+ R This release is found in the 0.3 directory
+ B Avoid naming files aux.* for Windows NT compatibility
