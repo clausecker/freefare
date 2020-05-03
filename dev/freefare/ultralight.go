@@ -1,4 +1,4 @@
-// Copyright (c) 2014, Robert Clausecker <fuzxxl@gmail.com>
+// Copyright (c) 2014, 2020 Robert Clausecker <fuzxxl@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published by the
@@ -16,6 +16,7 @@ package freefare
 
 // #include <freefare.h>
 import "C"
+import "unsafe"
 
 // Convert a Tag into an UltralightTag to access functionality available for
 // Mifare Ultralight tags.
@@ -114,26 +115,46 @@ func (t UltralightTag) SetKey(key DESFireKey) error {
 	return t.TranslateError(err)
 }
 
-// Returns key derivation object
-func (t UltralightTag) NewAn10922(key DESFireKey, keyType MifareKeyType) MifareKeyDeriver {
-	return MifareKeyDeriver{t.tag, C.mifare_key_deriver_new_an10922(key.key, C.MifareKeyType(keyType), 0)}
+// Allocate a new key deriver object which can be used to generate
+// diversified keys from masterKey in accordance with AN10922.
+// The non-AN10922 compliant operation mode provided for compatibility
+// with old versions of the libfreefare is not supported.
+func (t UltralightTag) NewAn10922(masterKey DESFireKey, keyType MifareKeyType) (kd MifareKeyDeriver, err error) {
+	deriver, err := C.mifare_key_deriver_new_an10922(masterKey.key, C.MifareKeyType(keyType), 0)
+	if deriver == nil {
+		err = t.TranslateError(err)
+		return
+	}
+
+	kd.tag = t.tag
+	kd.deriver = deriver
+	kd.finalizee = newFinalizee(unsafe.Pointer(deriver))
+
+	return
 }
 
 // Helper method that takes the master key and derives a new key based on tag UID
 func (t UltralightTag) Diversify(masterKey DESFireKey) (*DESFireKey, error) {
-	deriver := t.NewAn10922(masterKey, MIFARE_KEY_2K3DES)
-	err := deriver.Begin()
+	deriver, err := t.NewAn10922(masterKey, MIFARE_KEY_2K3DES)
 	if err != nil {
 		return nil, err
 	}
-	err = deriver.UpdateUID()
+
+	err = deriver.Begin()
 	if err != nil {
 		return nil, err
 	}
+
+	err = deriver.UpdateUID(nil)
+	if err != nil {
+		return nil, err
+	}
+
 	derivedKey, err := deriver.End()
 	if err != nil {
 		return nil, err
 	}
+
 	return derivedKey, nil
 }
 
