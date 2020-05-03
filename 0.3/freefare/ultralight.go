@@ -65,7 +65,7 @@ func (t UltralightTag) ReadPage(page byte) ([4]byte, error) {
 			data[i] = byte(d)
 		}
 
-		return [4]byte{}, nil
+		return data, nil
 	}
 
 	return [4]byte{}, t.TranslateError(err)
@@ -99,6 +99,5 @@ func (t UltralightTag) Authenticate(key DESFireKey) error {
 	if r == 0 {
 		return nil
 	}
-
 	return t.TranslateError(err)
 }
