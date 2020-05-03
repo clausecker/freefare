@@ -1,4 +1,5 @@
-// Copyright (c) 2020 Robert Clausecker <fuzxxl@gmail.com>
+// Copyright (c) 2020 Nikitka Karpukhin <gray@graynk.space>
+//                    Robert Clausecker <fuzxxl@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published by the
@@ -103,9 +104,9 @@ func (d *MifareKeyDeriver) End() (*DESFireKey, error) {
 // LengthError is returned.
 func (d *MifareKeyDeriver) EndRaw(key []byte) (int, error) {
 	r, err := C.mifare_key_deriver_end_raw(d.deriver, (*C.uchar)(&key[0]), C.size_t(len(key)))
-	if (r == -1) {
+	if r == -1 {
 		return int(r), d.tag.TranslateError(err)
-	} else if (int(r) > len(key)) {
+	} else if int(r) > len(key) {
 		return int(r), Error(LengthError)
 	}
 
