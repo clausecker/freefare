@@ -75,7 +75,7 @@ func (d *MifareKeyDeriver) UpdateAID(aid DESFireAid) error {
 // Specify data to diversify the key from the master key.
 func (d *MifareKeyDeriver) UpdateData(data []byte) error {
 	r, err := C.mifare_key_deriver_update_data(d.deriver, (*C.uchar)(&data[0]), C.size_t(len(data)))
-	if r == 0 {
+	if r != 0 {
 		return d.tag.TranslateError(err)
 	}
 
