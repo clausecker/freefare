@@ -101,3 +101,50 @@ func (t UltralightTag) Authenticate(key DESFireKey) error {
 	}
 	return t.TranslateError(err)
 }
+
+// Set the provided authentication key. Note that this only works with
+// MifareUltralightC tags. It _should_ work only after authentication,
+// but for some reason the opposite is true: it only works without it.
+func (t UltralightTag) SetKey(key DESFireKey) error {
+	r, err := C.mifare_ultralightc_set_key(t.ctag, key.key)
+	if r == 0 {
+		return nil
+	}
+
+	return t.TranslateError(err)
+}
+
+// Returns key derivation object
+func (t UltralightTag) NewAn10922(key DESFireKey, keyType MifareKeyType) MifareKeyDeriver {
+	return MifareKeyDeriver{t.tag, C.mifare_key_deriver_new_an10922(key.key, C.MifareKeyType(keyType), 0)}
+}
+
+// Helper method that takes the master key and derives a new key based on tag UID
+func (t UltralightTag) Diversify(masterKey DESFireKey) (*DESFireKey, error) {
+	deriver := t.NewAn10922(masterKey, MIFARE_KEY_2K3DES)
+	err := deriver.Begin()
+	if err != nil {
+		return nil, err
+	}
+	err = deriver.UpdateUID()
+	if err != nil {
+		return nil, err
+	}
+	derivedKey, err := deriver.End()
+	if err != nil {
+		return nil, err
+	}
+	return derivedKey, nil
+}
+
+// Helper function to change the authentication keys on the tag
+func (t UltralightTag) SwapKeys(oldKey, newKey DESFireKey) error {
+	err := t.Authenticate(oldKey)
+
+	if err != nil {
+		t.Disconnect()
+		t.Connect()
+	}
+
+	return t.SetKey(newKey)
+}
