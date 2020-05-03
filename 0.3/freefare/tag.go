@@ -42,22 +42,18 @@ type Tag interface {
 
 // Generic tag structure to hold all the underlying details
 type tag struct {
-	ctag C.FreefareTag
+	ctag C.MifareTag
 	dev  nfc.Device
-	info *C.nfc_target // may be nil
+	info *C.nfc_iso14443a_info // may be nil
 	*finalizee
 }
 
 // Wrap a C.MifareTag and set a finalizer to automatically free the tag once it
 // becomes unreachable.
-func wrapTag(t C.FreefareTag, d nfc.Device, i *C.nfc_target) Tag {
+func wrapTag(t C.MifareTag, d nfc.Device, i *C.nfc_iso14443a_info) Tag {
 	tag := &tag{t, d, i, newFinalizee(unsafe.Pointer(t))}
 	var aTag Tag
 	switch tag.Type() {
-	case Felica:
-		panic("Felica tags are not supported")
-	case Mini:
-		panic("Mini tags are not supported")
 	case Ultralight:
 		fallthrough
 	case UltralightC:
@@ -68,8 +64,6 @@ func wrapTag(t C.FreefareTag, d nfc.Device, i *C.nfc_target) Tag {
 		aTag = ClassicTag{tag}
 	case DESFire:
 		aTag = DESFireTag{tag, Default, Default}
-	case Ntag21x:
-		panic("Ntag_21x tags are not supported")
 	default:
 		panic("This shouldn't happen. Please report a bug.")
 	}
@@ -78,14 +72,11 @@ func wrapTag(t C.FreefareTag, d nfc.Device, i *C.nfc_target) Tag {
 
 // Mifare tag types
 const (
-	Felica = iota
-	Mini
+	Ultralight = iota
+	UltralightC
 	Classic1k
 	Classic4k
 	DESFire
-	Ultralight
-	UltralightC
-	Ntag21x
 )
 
 // Get the nfc.Devcice that was used to create t
@@ -147,7 +138,7 @@ func GetTags(d nfc.Device) ([]Tag, error) {
 
 		iptr := uintptr(unsafe.Pointer(tagptr))
 		iptr += unsafe.Sizeof(*tagptr)
-		tagptr = (*C.FreefareTag)(unsafe.Pointer(iptr))
+		tagptr = (*C.MifareTag)(unsafe.Pointer(iptr))
 	}
 
 	return tags, nil
@@ -165,7 +156,7 @@ func NewTag(d nfc.Device, info *nfc.ISO14443aTarget) (Tag, error) {
 	// Marshall() actually returns an nfc_target, but it's first member is
 	// an nfc_iso14443a_info so this is safe, although we waste a couple of
 	// bytes.1
-	cinfo := (*C.nfc_target)(unsafe.Pointer(info.Marshall()))
+	cinfo := (*C.nfc_iso14443a_info)(unsafe.Pointer(info.Marshall()))
 	ctag, err := C.freefare_tag_new(dd, *cinfo)
 	defer C.free(unsafe.Pointer(ctag))
 	if ctag == nil {
