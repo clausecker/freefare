@@ -1,30 +1,21 @@
 This is a Go wrapper for the libfreefare. It has been written against version
 0.4.0 of the libfreefare.  As the libfreefare is going to incorporate some
 breaking changes in an upcoming version, breaking changes are likely to occur.
-However, these are going to affect new versions of this wrapper only.  You may
-safely assume that the 0.3 branch will continue to work with libfreefare 0.4.0
-indefinitely.  Furthermore note that the code is largely untested and should
-not be used in production code without further testing.
+Furthermore note that the code is largely untested and should not be used in
+production code without further testing.
 
 Please notice that this release contains a possibly memory corrupting issue in
 freefare.DESFireTag.ReadData() and freefare.DESFireTag.ReadRecords(). This issue
 is caused by a bug in the libfreefare that is likely to be fixed in a future
 version of libfreefare.
 
-The current release of this wrapper is release 0.3. Successive releases will be
-placed in different subfolders as to not change the semantics of code that links
-against a specific version of this wrapper. The general folder structure is
+This package uses Go modules.  To import it, use the import path
 
-    github.com/fuzxxl/freefare/<version>/freefare
+    import "github.com/fuzxxl/freefare"
 
-The following versions are special:
-
-* latest always points to the latest version
-* dev is the version that is currently under development
-
-Note that this scheme is going to change with the next major release as I plan
-to adapt Go modules.  Compatibility with existing code based on the 0.3 branch
-is going to be maintained with no changes on your part required.
+Compatibility with existing code based on the old 0.3 branch is going to be
+maintained with no changes on your part required.  I do recommend that any user
+switches to the Go module based structure if possible though.
 
 Copyright (c) 2014, 2020 Robert Clausecker <fuzxxl@gmail.com>
 

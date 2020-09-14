@@ -39,3 +39,16 @@ Release 0.3 (2014-08-30):
 Release 0.3.1 (2019-02-04):
  R This release is found in the 0.3 directory
  B Avoid naming files aux.* for Windows NT compatibility
+
+Release 0.4.0 (2020-09-14):
+ B Fix issues #4, #5, #6 as well as some other problems
+ R Bump nfc dependency to 2.1.4.  This means libnfc version 1.8.0 or
+   later will be needed.
+ R Switch to Go modules.
+ I Rename import path as I have renamed my github account.  The new
+   import path is
+
+       http://github.com/clausecker/freefare
+
+   The old import path as well as the 0.3 branch will continue to work
+   if and only if not operating in module mode.
