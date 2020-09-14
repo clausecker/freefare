@@ -11,7 +11,7 @@ version of libfreefare.
 
 This package uses Go modules.  To import it, use the import path
 
-    import "github.com/fuzxxl/freefare"
+    import "github.com/clausecker/freefare"
 
 Compatibility with existing code based on the old 0.3 branch is going to be
 maintained with no changes on your part required.  I do recommend that any user
