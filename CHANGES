@@ -52,3 +52,7 @@ Release 0.4.0 (2020-09-14):
 
    The old import path as well as the 0.3 branch will continue to work
    if and only if not operating in module mode.
+
+Upcoming:
+ R document libfreefare dependency to be some post 0.4.0 git checkout
+   due to the recently added MifareKeyDeriver code (cf. PR #8)

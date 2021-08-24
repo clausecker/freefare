@@ -1,8 +1,8 @@
-This is a Go wrapper for the libfreefare. It has been written against version
-0.4.0 of the libfreefare.  As the libfreefare is going to incorporate some
-breaking changes in an upcoming version, breaking changes are likely to occur.
-Furthermore note that the code is largely untested and should not be used in
-production code without further testing.
+This is a Go wrapper for the libfreefare.  A recent (post 0.4.0 but pre breaking
+1.0.0 changes) git checkout of the libfreefare is needed.  As the libfreefare is
+going to incorporate some breaking changes in the upcoming version 1.0.0, breaking
+changes are likely to occur.  Furthermore note that the code is largely
+unmaintained and should not be used in production code without further testing.
 
 Please notice that this release contains a possibly memory corrupting issue in
 freefare.DESFireTag.ReadData() and freefare.DESFireTag.ReadRecords(). This issue
