@@ -13,6 +13,12 @@ This package uses Go modules.  To import it, use the import path
 
     import "github.com/clausecker/freefare"
 
+Pkg-config is used to find libfreefare automatically.  If this does not work,
+you can compile with tag nopkgconfig or no_pkgconfig to instruct the package to
+instead simply link with -lfreefare.  You'll then have to manually set things up
+for suitable -I... and -L... options to be supplied so the header files and
+library are found.
+
 Compatibility with existing code based on the old 0.3 branch is going to be
 maintained with no changes on your part required.  I do recommend that any user
 switches to the Go module based structure if possible though.
