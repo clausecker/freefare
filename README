@@ -23,7 +23,7 @@ Compatibility with existing code based on the old 0.3 branch is going to be
 maintained with no changes on your part required.  I do recommend that any user
 switches to the Go module based structure if possible though.
 
-Copyright (c) 2014, 2020 Robert Clausecker <fuzxxl@gmail.com>
+Copyright (c) 2014, 2020, 2024 Robert Clausecker <fuzxxl@gmail.com>
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the Free
