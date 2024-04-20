@@ -2,8 +2,8 @@ This is a Go wrapper for the libfreefare.
 
 You need the following libfreefare version to use this code:
 
- version v0.3.2 needs libfreefare version 0.4.0
- version v0.4.0 needs libfreefare post 0.4.0 but no later than commit faac4ae
+ - version v0.3.2 needs libfreefare version 0.4.0
+ - version v0.4.0 needs libfreefare commit b83cbcb of 2019-10-29 or later
 
 As the libfreefare is going to incorporate some breaking changes in the upcoming
 version 1.0.0, breaking changes are likely to occur.  Furthermore note that the
