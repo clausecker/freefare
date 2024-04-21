@@ -61,6 +61,8 @@ Release 0.3.2 (2024-04-20):
    new features so the module can be used with libfreefare 0.4.0.
  I Switch to Go modules and rename import path as with v0.4.0.
 
-Upcoming:
+Release 0.4.1 (2024-04-21)
  R document libfreefare dependency to be some post 0.4.0 git checkout
-   due to the recently added MifareKeyDeriver code (cf. PR #8)
+   due to the recently added MifareKeyDeriver code (cf. PR #8, issue #9)
+ C add support for finding libfreefare using pkg-config
+ C bump github.com/clausecker/nfc dependency to v2.2.0
