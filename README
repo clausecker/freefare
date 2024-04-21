@@ -1,8 +1,14 @@
-This is a Go wrapper for the libfreefare. It has been written against version
-0.4.0 of the libfreefare.  As the libfreefare is going to incorporate some
-breaking changes in an upcoming version, breaking changes are likely to occur.
-Furthermore note that the code is largely untested and should not be used in
-production code without further testing.
+This is a Go wrapper for the libfreefare.
+
+You need the following libfreefare version to use this code:
+
+ - version v0.3.2 needs libfreefare version 0.4.0
+ - version v0.4.0 needs libfreefare commit b83cbcb of 2019-10-29 or later
+
+As the libfreefare is going to incorporate some breaking changes in the upcoming
+version 1.0.0, breaking changes are likely to occur.  Furthermore note that the
+code is largely unmaintained and should not be used in production code without
+further testing.
 
 Please notice that this release contains a possibly memory corrupting issue in
 freefare.DESFireTag.ReadData() and freefare.DESFireTag.ReadRecords(). This issue
@@ -11,13 +17,19 @@ version of libfreefare.
 
 This package uses Go modules.  To import it, use the import path
 
-    import "github.com/fuzxxl/freefare"
+    import "github.com/clausecker/freefare"
+
+Pkg-config is used to find libfreefare automatically.  If this does not work,
+you can compile with tag nopkgconfig or no_pkgconfig to instruct the package to
+instead simply link with -lfreefare.  You'll then have to manually set things up
+for suitable -I... and -L... options to be supplied so the header files and
+library are found.
 
 Compatibility with existing code based on the old 0.3 branch is going to be
 maintained with no changes on your part required.  I do recommend that any user
 switches to the Go module based structure if possible though.
 
-Copyright (c) 2014, 2020 Robert Clausecker <fuzxxl@gmail.com>
+Copyright (c) 2014, 2020, 2024 Robert Clausecker <fuzxxl@gmail.com>
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the Free

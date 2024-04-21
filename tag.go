@@ -1,5 +1,5 @@
-// Copyright (c) 2014, 2019, 2020 Robert Clausecker <fuzxxl@gmail.com>
-//                           2020 Nikitka Karpukhin <gray@graynk.space>
+// Copyright (c) 2014, 2019, 2020, 2024 Robert Clausecker <fuzxxl@gmail.com>
+//                                 2020 Nikitka Karpukhin <gray@graynk.space>
 //
 // This program is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published by the
@@ -15,7 +15,6 @@
 
 package freefare
 
-// #cgo LDFLAGS: -lfreefare
 // #include <freefare.h>
 // #include <stdlib.h>
 import "C"
