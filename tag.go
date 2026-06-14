@@ -135,10 +135,7 @@ func GetTags(d nfc.Device) ([]Tag, error) {
 	var tags []Tag
 	for *tagptr != nil {
 		tags = append(tags, wrapTag(*tagptr, d, nil))
-
-		iptr := uintptr(unsafe.Pointer(tagptr))
-		iptr += unsafe.Sizeof(*tagptr)
-		tagptr = (*C.MifareTag)(unsafe.Pointer(iptr))
+		tagptr = (*C.MifareTag)(unsafe.Add(unsafe.Pointer(tagptr), unsafe.Sizeof(*tagptr)))
 	}
 
 	return tags, nil
