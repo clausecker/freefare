@@ -201,18 +201,18 @@ func (t DESFireTag) DFNames() ([]DESFireDF, error) {
 		return nil, t.TranslateError(err)
 	}
 
+	defer C.free(unsafe.Pointer(cdfs))
+
 	dfs := make([]DESFireDF, int(count))
-	dfsptr := uintptr(unsafe.Pointer(cdfs))
+	cdfSlice := unsafe.Slice(cdfs, count)
 	for i := range dfs {
-		dfptr := (*C.MifareDESFireDF)(unsafe.Pointer(dfsptr + uintptr(i)*unsafe.Sizeof(*cdfs)))
 		dfs[i] = DESFireDF{
-			NewDESFireAid(uint32(dfptr.aid)),
-			uint16(dfptr.fid),
-			C.GoBytes(unsafe.Pointer(&dfptr.df_name[0]), C.int(dfptr.df_name_len)),
+			NewDESFireAid(uint32(cdfSlice[i].aid)),
+			uint16(cdfSlice[i].fid),
+			C.GoBytes(unsafe.Pointer(&cdfSlice[i].df_name[0]), C.int(cdfSlice[i].df_name_len)),
 		}
 	}
 
-	C.free(unsafe.Pointer(dfsptr))
 	return dfs, nil
 }
 

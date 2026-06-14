@@ -88,10 +88,10 @@ func (t DESFireTag) ApplicationIds() ([]DESFireAid, error) {
 	}
 
 	aids := make([]DESFireAid, int(count))
-	aidsptr := uintptr(unsafe.Pointer(caids))
+	caidsSlice := unsafe.Slice(caids, count)
 	for i := range aids {
 		// Assume that a C.MifareDESFireAID is a *[3]C.uint8_t
-		aidptr := (*DESFireAid)(unsafe.Pointer(aidsptr + uintptr(i)*unsafe.Sizeof(*caids)))
+		aidptr := (*DESFireAid)(unsafe.Pointer(&caidsSlice[i]))
 		aids[i] = *aidptr
 	}
 
