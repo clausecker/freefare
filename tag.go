@@ -157,7 +157,6 @@ func NewTag(d nfc.Device, info *nfc.ISO14443aTarget) (Tag, error) {
 	// bytes.1
 	cinfo := (*C.nfc_iso14443a_info)(unsafe.Pointer(info.Marshall()))
 	ctag, err := C.freefare_tag_new(dd, *cinfo)
-	defer C.free(unsafe.Pointer(ctag))
 	if ctag == nil {
 		if err == nil {
 			return nil, errors.New("could not create tag")
