@@ -60,3 +60,6 @@ Release 0.3.2 (2024-04-20):
  R This version exists as a backport of the 0.4.0 changes without the
    new features so the module can be used with libfreefare 0.4.0.
  I Switch to Go modules and rename import path as with v0.4.0.
+
+Release 0.3.3 (2026-06-15):
+ B Fix issue #11, a use-after-free in NewTag()
