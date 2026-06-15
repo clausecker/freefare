@@ -1,4 +1,4 @@
-// Copyright (c) 2014, Robert Clausecker <fuzxxl@gmail.com>
+// Copyright (c) 2014, 2026 Robert Clausecker <fuzxxl@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published by the
@@ -88,10 +88,10 @@ func (t DESFireTag) ApplicationIds() ([]DESFireAid, error) {
 	}
 
 	aids := make([]DESFireAid, int(count))
-	aidsptr := uintptr(unsafe.Pointer(caids))
+	caidsSlice := unsafe.Slice(caids, count)
 	for i := range aids {
 		// Assume that a C.MifareDESFireAID is a *[3]C.uint8_t
-		aidptr := (*DESFireAid)(unsafe.Pointer(aidsptr + uintptr(i)*unsafe.Sizeof(*caids)))
+		aidptr := (*DESFireAid)(unsafe.Pointer(&caidsSlice[i]))
 		aids[i] = *aidptr
 	}
 

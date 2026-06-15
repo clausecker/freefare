@@ -1,5 +1,6 @@
-// Copyright (c) 2014, 2019, 2020, 2024 Robert Clausecker <fuzxxl@gmail.com>
-//                                 2020 Nikitka Karpukhin <gray@graynk.space>
+// Copyright (c) 2014, 2019, 2020, 2024,
+//                                 2026  Robert Clausecker <fuzxxl@gmail.com>
+//                                 2020  Nikitka Karpukhin <gray@graynk.space>
 //
 // This program is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published by the
@@ -144,10 +145,7 @@ func GetTags(d nfc.Device) ([]Tag, error) {
 	var tags []Tag
 	for *tagptr != nil {
 		tags = append(tags, wrapTag(*tagptr, d, nil))
-
-		iptr := uintptr(unsafe.Pointer(tagptr))
-		iptr += unsafe.Sizeof(*tagptr)
-		tagptr = (*C.FreefareTag)(unsafe.Pointer(iptr))
+		tagptr = (*C.FreefareTag)(unsafe.Add(unsafe.Pointer(tagptr), unsafe.Sizeof(*tagptr)))
 	}
 
 	return tags, nil
@@ -167,7 +165,6 @@ func NewTag(d nfc.Device, info *nfc.ISO14443aTarget) (Tag, error) {
 	// bytes.1
 	cinfo := (*C.nfc_target)(unsafe.Pointer(info.Marshall()))
 	ctag, err := C.freefare_tag_new(dd, *cinfo)
-	defer C.free(unsafe.Pointer(ctag))
 	if ctag == nil {
 		if err == nil {
 			return nil, errors.New("could not create tag")
