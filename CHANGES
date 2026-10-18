@@ -71,3 +71,6 @@ Release 0.4.2 (2026-01-15)
  B Fix issue #11, a use-after-free in NewTag()
  C use Go 1.17 features for unsafe.Pointer manipulation
  I bump Go version to 1.17 for unsafe.Slice() and unsafe.Add()
+
+Release 0.4.3 (2026-10-18)
+ B Fix issue #12, a data size confusion in DESFireTag.IsoFileIds()
