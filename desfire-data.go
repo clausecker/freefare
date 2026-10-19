@@ -75,15 +75,22 @@ func (t DESFireTag) WriteData(fileNo byte, offset int64, buf []byte) (int, error
 
 	var r C.ssize_t
 	var err error
+
+	// TODO: use unsafe.SliceData() once go 1.20 is required
+	var ptr unsafe.Pointer
+	length := C.size_t(len(buf))
+	if length > 0 {
+		ptr = unsafe.Pointer(&buf[0])
+	}
+
 	if t.WriteSettings == Default {
 		r, err = C.mifare_desfire_write_data(
 			t.ctag, C.uint8_t(fileNo), C.off_t(offset),
-			C.size_t(len(buf)), unsafe.Pointer(&buf[0]))
+			length, ptr)
 	} else {
 		r, err = C.mifare_desfire_write_data_ex(
 			t.ctag, C.uint8_t(fileNo), C.off_t(offset),
-			C.size_t(len(buf)), unsafe.Pointer(&buf[0]),
-			C.int(t.WriteSettings))
+			length, ptr, C.int(t.WriteSettings))
 	}
 
 	if r < 0 {
@@ -199,15 +206,22 @@ func (t DESFireTag) WriteRecord(fileNo byte, offset int64, buf []byte) (int, err
 
 	var r C.ssize_t
 	var err error
+
+	// TODO: use unsafe.SliceData() once go 1.20 is required
+	var ptr unsafe.Pointer
+	length := C.size_t(len(buf))
+	if length > 0 {
+		ptr = unsafe.Pointer(&buf[0])
+	}
+
 	if t.WriteSettings == Default {
 		r, err = C.mifare_desfire_write_record(
 			t.ctag, C.uint8_t(fileNo), C.off_t(offset),
-			C.size_t(len(buf)), unsafe.Pointer(&buf[0]))
+			length, ptr)
 	} else {
 		r, err = C.mifare_desfire_write_record_ex(
 			t.ctag, C.uint8_t(fileNo), C.off_t(offset),
-			C.size_t(len(buf)), unsafe.Pointer(&buf[0]),
-			C.int(t.WriteSettings))
+			length, ptr, C.int(t.WriteSettings))
 	}
 
 	if r < 0 {
