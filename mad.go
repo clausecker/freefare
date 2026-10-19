@@ -267,10 +267,16 @@ func (m *Mad) FindApplication(aid MadAid) []byte {
 // function returns the number of sectors read or a negative number and an
 // error. This function wraps mifare_application_read().
 func (t ClassicTag) ReadApplication(m *Mad, aid MadAid, buf []byte, key [6]byte, keyType int) (int, error) {
+	// TODO: use unsafe.SliceData() once go 1.20 is required
+	length := C.size_t(len(buf))
+	var ptr unsafe.Pointer
+	if length > 0 {
+		ptr = unsafe.Pointer(&buf[0])
+	}
+
 	r, err := C.mifare_application_read(
 		t.ctag, m.m, aid.aid,
-		unsafe.Pointer(&buf[0]),
-		C.size_t(len(buf)),
+		ptr, length,
 		(*C.uchar)(&key[0]),
 		C.MifareClassicKeyType(keyType),
 	)
@@ -286,10 +292,16 @@ func (t ClassicTag) ReadApplication(m *Mad, aid MadAid, buf []byte, key [6]byte,
 // returns the number of bytes written or a negative number and an error. This
 // function wraps mifare_application_write().
 func (t ClassicTag) WriteApplication(m *Mad, aid MadAid, buf []byte, key [6]byte, keyType int) (int, error) {
+	// TODO: use unsafe.SliceData() once go 1.20 is required
+	length := C.size_t(len(buf))
+	var ptr unsafe.Pointer
+	if length > 0 {
+		ptr = unsafe.Pointer(&buf[0])
+	}
+
 	r, err := C.mifare_application_write(
 		t.ctag, m.m, aid.aid,
-		unsafe.Pointer(&buf[0]),
-		C.size_t(len(buf)),
+		ptr, length,
 		(*C.uchar)(&key[0]),
 		C.MifareClassicKeyType(keyType),
 	)
