@@ -167,12 +167,14 @@ func NewTag(d nfc.Device, info *nfc.ISO14443aTarget) (Tag, error) {
 	ctag, err := C.freefare_tag_new(dd, *cinfo)
 	if ctag == nil {
 		if err == nil {
-			return nil, errors.New("could not create tag")
+			return nil, Error(UnknownTagType)
 		}
 
 		if err.(syscall.Errno) == syscall.ENOMEM {
 			panic("C.malloc() returned nil (out of memory)")
 		}
+
+		return nil, err
 	}
 
 	return wrapTag(ctag, d, cinfo), nil
