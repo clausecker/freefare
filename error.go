@@ -36,6 +36,7 @@ const (
 	ApplIntegrityError  = 0xA1
 	AuthenticationError = 0xAE
 	AdditionalFrame     = 0xAF
+	UnknownTagType      = 0xBB
 	BoundaryError       = 0xBE
 	PICCIntegrityError  = 0xC1
 	CommandAborted      = 0xCA
@@ -78,6 +79,7 @@ var errorStrings = map[Error]string{
 	ApplIntegrityError:  "application integrity error",
 	AuthenticationError: "authentication failed",
 	AdditionalFrame:     "addition frame",
+	UnknownTagType:      "unknown tag type",
 	BoundaryError:       "boundary error",
 	PICCIntegrityError:  "PICC integrity error",
 	CommandAborted:      "command aborted",
