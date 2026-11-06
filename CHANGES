@@ -74,3 +74,11 @@ Release 0.4.2 (2026-01-15)
 
 Release 0.4.3 (2026-10-18)
  B Fix issue #12, a data size confusion in DESFireTag.IsoFileIds()
+
+Release 0.4.4 (2026-11-06)
+ B Fix issue #13, out-of-bounds panis in DesFireTag.WriteData(),
+   DesFireTag.WriteRecord(), ClassicTag.ReadApplication(), and
+   ClassicTag.WriteApplication() when len(buf) == 0.
+ B Fix issue #14, incorrect error handling in NewTag().  We now
+   always return an error if freefare_tag_new() returned NULL.
+   If errno was set, that is returned, otherwise UnknownTag.
