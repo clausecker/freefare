@@ -1,4 +1,4 @@
-// Copyright (c) 2014, Robert Clausecker <fuzxxl@gmail.com>
+// Copyright (c) 2014, 2026 Robert Clausecker <fuzxxl@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published by the
@@ -106,9 +106,11 @@ func (t DESFireTag) IsoFileIds() ([]uint16, error) {
 		return nil, t.TranslateError(err)
 	}
 
-	// Cutting corners here
 	ids := make([]uint16, int(count))
-	C.memcpy(unsafe.Pointer(&ids[0]), unsafe.Pointer(cfiles), count)
+	cids := unsafe.Slice(cfiles, count)
+	for i := range ids {
+		ids[i] = uint16(cids[i])
+	}
 
 	return ids, nil
 }
