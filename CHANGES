@@ -63,3 +63,14 @@ Release 0.3.2 (2024-04-20):
 
 Release 0.3.3 (2026-06-15):
  B Fix issue #11, a use-after-free in NewTag()
+
+Release 0.3.4 (2026-11-06):
+ C use Go 1.17 features for unsafe.Pointer manipulation
+ I bump Go version to 1.17 for unsafe.Slice() and unsafe.Add()
+ B Fix issue #12, a data size confusion in DESFireTag.IsoFileIds()
+ B Fix issue #13, out-of-bounds panis in DesFireTag.WriteData(),
+   DesFireTag.WriteRecord(), ClassicTag.ReadApplication(), and
+   ClassicTag.WriteApplication() when len(buf) == 0.
+ B Fix issue #14, incorrect error handling in NewTag().  We now
+   always return an error if freefare_tag_new() returned NULL.
+   If errno was set, that is returned, otherwise UnknownTag.
